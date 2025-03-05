@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { LucideHouse, LucideReceiptText, LucideSearch, LucideUser } from "lucide-react";
+import Link from "next/link";
+import { CldOgImage } from "next-cloudinary";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,12 +15,39 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    
     <html lang="en">
+      <script 
+        src="https://upload-widget.cloudinary.com/global/all.js" 
+        async 
+        defer
+      />
+
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+        className={`antialiased p-4`}
+        >
         {children}
+        <CldOgImage src="og-image" alt="social image"/>
+
+
+
+        <nav className="bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-2 fixed bottom-0 left-0 w-full flex items-center justify-around">
+          <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
+            <LucideHouse />
+          </Link>
+          <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
+            <LucideSearch />
+          </Link>
+          <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
+            <LucideReceiptText />
+          </Link>
+          <Link href="/user" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
+            <LucideUser />
+          </Link>
+        </nav>
       </body>
+
     </html>
+    
   );
 }
