@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FcGoogle } from "react-icons/fc";
 
 type FormSchemaType = z.infer<typeof formSchema>;
 
@@ -87,13 +86,6 @@ export function LoginForm() {
           <Button type="submit" className="w-1/2 h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50  text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer">
                 Entrar
           </Button>
-           <button
-            className=" w-1/2 h-10 flex items-center justify-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-all duration-300 ease-in-out focus:outline-none"
-            onClick={() => alert("Entrar com o Google")}
-          >
-            <FcGoogle className="w-6 h-6" />
-            <span className="text-xs font-medium text-gray-700 cursor-pointer">Entrar com Google</span>
-          </button>
         </div>
         
       </form>

@@ -13,21 +13,20 @@ import {
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { FcGoogle } from "react-icons/fc"
+import { createUserWithEmailAndPassword,} from "firebase/auth"
+
+import { FirebaseError } from "firebase/app"
+import { auth, database } from "@/services/firebase"
+import { ref, set } from "firebase/database"
+import { useState } from "react"
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
+import { AlertCircle } from "lucide-react"
+import { redirect } from "next/navigation"
 
 type FormSchemaType = z.infer<typeof formSchema>
 
 // onsubmit
-async function onSubmit(data: FormSchemaType) {
-  const result = formSchema.safeParse(data)
 
-  if (!result.success) {
-    console.error("Erro de validação:", result.error.format())
-    return
-  }
-
-  console.log("Formulário válido!", result.data)
-}
 
 const formSchema = z.object({
   email: z
@@ -51,11 +50,55 @@ const formSchema = z.object({
     .max(200, { message: "O endereço é muito longo." }),
 })
 
+
+
 export function SignUpForm() {
+  const [error, setError] = useState("");
+
+
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "", address: "" },
   })
+
+
+  const handleFirebaseSignUp = async (email: string, password: string, address: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      
+      // Salvar informações adicionais no Realtime Database
+      await set(ref(database, `users/${userCredential.user.uid}`), {
+        email: userCredential.user.email,
+        address: address,
+        role: "user",
+        createdAt: new Date().toISOString()
+      })
+
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            alert("Este e-mail já está em uso.")
+            break
+          case 'auth/invalid-email':
+            setError("E-mail inválido.")
+            break
+          case 'auth/weak-password':
+            setError("Senha muito fraca.")
+            break
+          default:
+            setError("Erro ao criar conta. Tente novamente.")
+        }
+      }
+    }
+  }
+
+  const onSubmit = async (data: FormSchemaType) => {
+    await handleFirebaseSignUp(data.email, data.password, data.address)
+    form.reset()
+    redirect('/user')
+  }
+
 
   return (
     <Form {...form}>
@@ -78,6 +121,7 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="password"
@@ -120,17 +164,23 @@ export function SignUpForm() {
             type="submit"
             className="w-1/2 h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50 text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer"
           >
-            Cadastrar
+            Fazer cadastro
           </Button>
-          <button
-            className="w-1/2 h-10 flex items-center justify-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-all duration-300 ease-in-out focus:outline-none"
-            onClick={() => alert("Entrar com o Google")}
-          >
-            <FcGoogle className="w-6 h-6" />
-            <span className="text-xs font-medium text-gray-700 cursor-pointer">Cadastrar com Google</span>
-          </button>
         </div>
+        {error ? (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <Alert variant="destructive" className="relative z-10 max-w-md mx-auto p-4 rounded-md bg-red-600 text-white shadow-lg">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Your session has expired. Please log in again.
+            </AlertDescription>
+          </Alert>
+        </div>
+      ): ''}
       </form>
+      
     </Form>
   )
 }

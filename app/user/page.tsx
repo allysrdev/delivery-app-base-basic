@@ -1,19 +1,22 @@
+"use client"
 import LoginPage from '@/components/LoginPage'
-import StoreProfile from '@/components/StoreProfile'
+import UserProfile from '@/components/UserProfile';
+import { useAuth } from '@/context/AuthContext';
 import React from 'react'
 
-function page() {
+function Page() {
+  const { user, loading } = useAuth();
 
-    const user = false
   return (
-      <div className="w-full h-[100vh] overflow-hidden p-4 flex flex-col items-center justify-center">
-          {user ? (
-              <StoreProfile />
-          ) : (
-            <LoginPage />
-          )}
+    <div className="w-full h-[100vh] overflow-hidden p-4 flex flex-col items-center justify-center">
+      {user ? (
+        <UserProfile />
+      ) : (
+        <LoginPage />
+      )}
     </div>
   )
 }
 
-export default page
+
+export default Page
