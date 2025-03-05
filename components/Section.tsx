@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import ProductCard, { Product } from './ProductCard'
 import { getProducts } from '@/services/productService';
+import { Loader } from 'lucide-react';
 
 function Section() {
   const [products, setProducts] = useState<Product[]>([])
@@ -31,7 +32,7 @@ function Section() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
           {loading? (
-            <div>Loading...</div>
+            <div className='w-full h-full flex items-center justify-center'><Loader className='m-auto'/></div>
           ) : null}
         {products.map(product => {
           return <ProductCard key={product.id} description={product.description} id={product.id} imageUrl={product.imageUrl} name={product.name} price={product.price} />
