@@ -3,7 +3,6 @@ import "./globals.css";
 import { LucideHouse, LucideReceiptText, LucideSearch, LucideUser } from "lucide-react";
 import Link from "next/link";
 import { CldOgImage } from "next-cloudinary";
-import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -27,8 +26,7 @@ export default function RootLayout({
       <body
         className={`antialiased p-4`}
       >
-        <AuthProvider>
-        {children}
+          {children}
         <CldOgImage src="og-image" alt="social image"/>
 
 
@@ -37,7 +35,7 @@ export default function RootLayout({
           <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
             <LucideHouse />
           </Link>
-          <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
+          <Link href="/search" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
             <LucideSearch />
           </Link>
           <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
@@ -47,7 +45,6 @@ export default function RootLayout({
             <LucideUser />
           </Link>
           </nav>
-          </AuthProvider>
       </body>
 
     </html>

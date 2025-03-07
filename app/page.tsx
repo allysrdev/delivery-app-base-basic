@@ -27,15 +27,18 @@ export default function Home() {
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="fixed bottom-1/2 right-8"
           >
-            <Button className="w-14 h-14 rounded-full bg-black/30 backdrop-blur-md border border-white/50 shadow-lg text-white  flex items-center justify-center hover:bg-black/50 p-4 cursor-pointer">
+            <Button className="w-14 h-14 rounded-full bg-black/30 backdrop-blur-md border border-white/50 shadow-lg text-white  flex items-center justify-center hover:bg-black/50 p-4 cursor-pointer fixed top-24 right-3">
               <ShoppingCart className="w-6 h-6" />
             </Button>
           </motion.div>
         </PopoverTrigger>
-        <PopoverContent className="w-80 bg-black/50 backdrop-blur-md border border-white/10 shadow-lg text-white  sm:fixed sm:-bottom-44  sm:right-10 flex flex-col h-60 max-h-64 overflow-x-hidden">
+        <PopoverContent className=" mx-4 bg-black/50 backdrop-blur-md border border-white/10 shadow-lg text-white 
+        fixed -top-40 -right-8 min-w-[21.5rem] min-h-[24rem]
+        sm:min-w-[35rem] sm:min-h-[35rem]  sm:fixed sm:-top-80  sm:right-10 flex flex-col overflow-x-hidden">
+          <h1 className="font-bold text-xl">Carrinho</h1>
           <CartProductCard />
           <CartProductCard />
-          <div className="flex gap-2 flex-col">
+          <div className="flex gap-2 flex-col mt-auto">
             {/* Subtotal, Finalizar Compra */}
             <div className="w-[95%] h-[1px] bg-white/30 m-auto" />
             <p className="text-sm">Subtotal: R$10,00</p>

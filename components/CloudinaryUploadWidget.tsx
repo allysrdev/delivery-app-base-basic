@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type MouseEvent } from 'react';
+import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
@@ -24,6 +24,11 @@ interface CloudinaryUploadWidgetProps {
   multiple?: boolean;
   resourceType?: 'image' | 'video' | 'auto';
   maxImageFileSize?: number;
+  croppingAspectRatio: number;
+  croppingDefaultSelectionRatio: number,
+  transformation: [
+    {height: number, crop: string}
+  ]
 }
 
 interface CloudinaryUploadResult {
@@ -62,16 +67,16 @@ const CloudinaryUploadWidget = ({
           }
         );
 
-        const handleUploadClick = (e: MouseEvent) => {
+        const handleUploadClick = (e: Event) => {
           e.preventDefault();
           uploadWidgetRef.current?.open();
         };
 
         const button = uploadButtonRef.current;
-        button.addEventListener('click', handleUploadClick as unknown as EventListener);
+        button.addEventListener('click', handleUploadClick);
 
         return () => {
-          button.removeEventListener('click', handleUploadClick as unknown as EventListener);
+          button.removeEventListener('click', handleUploadClick);
         };
       }
     };
@@ -83,10 +88,10 @@ const CloudinaryUploadWidget = ({
     <button
       ref={uploadButtonRef}
       id="upload_widget"
-      className="cloudinary-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      className="bg-black/30 backdrop-blur-md border border-blue-500 text-white font-bold py-2 px-4 rounded"
       type="button"
     >
-      Upload Image
+      Fazer upload
     </button>
   );
 };

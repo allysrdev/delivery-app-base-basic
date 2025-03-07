@@ -1,7 +1,5 @@
-"use client"
-
-import { useForm } from "react-hook-form"
-import { Button } from "@/components/ui/button"
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -9,26 +7,29 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { createUserWithEmailAndPassword,} from "firebase/auth"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import { auth, database } from "@/services/firebase";
+import { ref, set } from "firebase/database";
+import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { AlertCircle, Loader, LucideUserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Cloudinary } from "@cloudinary/url-gen/index";
+import { AdvancedImage, responsive, placeholder } from '@cloudinary/react';
+import CloudinaryUploadWidget from "./CloudinaryUploadWidget";
 
-import { FirebaseError } from "firebase/app"
-import { auth, database } from "@/services/firebase"
-import { ref, set } from "firebase/database"
-import { useState } from "react"
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
-import { AlertCircle } from "lucide-react"
-import { redirect } from "next/navigation"
-
-type FormSchemaType = z.infer<typeof formSchema>
-
-// onsubmit
-
-
+// Esquema de validação do formulário
 const formSchema = z.object({
+  name: z
+    .string()
+    .min(2, { message: "O nome deve ter pelo menos 2 caracteres." })
+    .max(100, { message: "O nome é muito longo." }),
+
   email: z
     .string()
     .min(5, { message: "E-mail deve ter pelo menos 5 caracteres." })
@@ -48,61 +49,141 @@ const formSchema = z.object({
     .string()
     .min(5, { message: "O endereço deve ter pelo menos 5 caracteres." })
     .max(200, { message: "O endereço é muito longo." }),
-})
+});
 
-
+type FormSchemaType = z.infer<typeof formSchema>;
 
 export function SignUpForm() {
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [publicId, setPublicId] = useState('');
+  
+  const router = useRouter();
 
+   const cld = new Cloudinary({
+    cloud: {
+      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    },
+  });
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
-    defaultValues: { email: "", password: "", address: "" },
-  })
+    defaultValues: { name: "", email: "", password: "", address: "" },
+  });
 
-
-  const handleFirebaseSignUp = async (email: string, password: string, address: string) => {
+  const handleFirebaseSignUp = async (name: string, email: string, password: string, address: string,) => {
+    setLoading(true)
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-      
-      // Salvar informações adicionais no Realtime Database
+      // Cria o usuário no Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Salva informações adicionais no Realtime Database
+      const imageUrl = publicId ? cld.image(publicId).toURL() : "";
+
       await set(ref(database, `users/${userCredential.user.uid}`), {
+        displayName: name, 
         email: userCredential.user.email,
         address: address,
         role: "user",
-        createdAt: new Date().toISOString()
-      })
+        createdAt: new Date().toISOString(),
+        photoUrl: imageUrl,
+      });
 
+      // Redireciona para a página do usuário após o cadastro
+      setLoading(false)
+      router.push("/user/userInfo");
     } catch (error) {
       if (error instanceof FirebaseError) {
         switch (error.code) {
-          case 'auth/email-already-in-use':
-            alert("Este e-mail já está em uso.")
-            break
-          case 'auth/invalid-email':
-            setError("E-mail inválido.")
-            break
-          case 'auth/weak-password':
-            setError("Senha muito fraca.")
-            break
+          case "auth/email-already-in-use":
+            setError("Este e-mail já está em uso.");
+            break;
+          case "auth/invalid-email":
+            setError("E-mail inválido.");
+            break;
+          case "auth/weak-password":
+            setError("Senha muito fraca.");
+            break;
           default:
-            setError("Erro ao criar conta. Tente novamente.")
+            setError("Erro ao criar conta. Tente novamente.");
         }
+      } else {
+        setError("Erro desconhecido. Tente novamente.");
       }
+      setLoading(false)
     }
-  }
+  };
 
   const onSubmit = async (data: FormSchemaType) => {
-    await handleFirebaseSignUp(data.email, data.password, data.address)
-    form.reset()
-    redirect('/user')
-  }
-
+    setLoading(true)
+    setError(""); // Limpa erros anteriores
+    await handleFirebaseSignUp(data.name, data.email, data.password, data.address);
+    form.reset(); // Limpa o formulário após o envio
+  };
 
   return (
     <Form {...form}>
+      {error && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+        <h1 className="font-bold">Foto de perfil</h1>
+        <div className="w-full flex flex-col items-center justify-center gap-4">
+        <div
+          className="image-previewr"
+          style={{ width: '150px', margin: '20px auto rounded-full' }}
+        >
+          {publicId ? (
+          <AdvancedImage
+            style={{ maxWidth: '100%', maxHeight: '150px' }}
+            cldImg={cld.image(publicId)}
+            plugins={[responsive(), placeholder()]}
+          />
+          ) : (
+              <div className="w-[150px] h-[150px] flex items-center justify-center rounded-full bg-black/30 backdrop-blur-md border border-white/50">
+                <LucideUserRound />
+              </div>
+          )}
+          </div>
+            <CloudinaryUploadWidget
+              uwConfig={{
+                cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
+                uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!,
+                cropping: true, // Habilitar cropping
+                croppingAspectRatio: 1, // Proporção de aspecto (opcional)
+                croppingDefaultSelectionRatio: 1, // Proporção padrão de seleção (opcional)
+                maxImageFileSize: 1500000, // Tamanho máximo do arquivo (1.5MB)
+                transformation: [
+                  { height: 500, crop: 'limit' }, // Define uma altura máxima de 500px
+                ],
+              }}
+              setPublicId={setPublicId}
+            />
+          </div>
+
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  className="placeholder:text-xs w-full"
+                  placeholder="Seu nome completo"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="text-xs min-h-[1rem] opacity-100 transition-opacity duration-300 ease-in-out break-words" />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="email"
@@ -121,7 +202,7 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="password"
@@ -140,6 +221,7 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="address"
@@ -163,24 +245,22 @@ export function SignUpForm() {
           <Button
             type="submit"
             className="w-1/2 h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50 text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer"
+            onSubmit={() => {
+              setLoading(true);
+              setTimeout(() => {
+                setLoading(false);
+              }, 2000);
+              setLoading(false);
+
+            }}
           >
-            Fazer cadastro
+            
+            {loading ? <Loader/> : "Fazer Cadastro"}
           </Button>
         </div>
-        {error ? (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-          <Alert variant="destructive" className="relative z-10 max-w-md mx-auto p-4 rounded-md bg-red-600 text-white shadow-lg">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              Your session has expired. Please log in again.
-            </AlertDescription>
-          </Alert>
-        </div>
-      ): ''}
+
+        
       </form>
-      
     </Form>
-  )
+  );
 }
