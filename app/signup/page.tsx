@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, UseFormGetValues } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -17,7 +17,7 @@ import { Loader, LucideUndo, LucideUserPlus } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { redirect } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Cloudinary } from '@cloudinary/url-gen/index'
+// import { Cloudinary } from '@cloudinary/url-gen/index'
 import { addUser } from '@/services/userService'
 import { v4 as uuidv4 } from 'uuid';
 import Image from 'next/image'
@@ -157,7 +157,6 @@ function Page() {
                                 <FormLabel>Endereço</FormLabel>
                                 <FormControl>
                                         <Input type='text' className='text-xs' placeholder="Informe seu endereço completo" {...field}
-                                            value={"" || field.value}
                                        />
                                 </FormControl>
                                 <FormMessage />
