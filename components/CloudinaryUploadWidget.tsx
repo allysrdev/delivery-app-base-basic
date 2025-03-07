@@ -21,14 +21,6 @@ interface CloudinaryUploadWidgetProps {
   cloudName: string;
   uploadPreset: string;
   cropping?: boolean;
-  multiple?: boolean;
-  resourceType?: 'image' | 'video' | 'auto';
-  maxImageFileSize?: number;
-  croppingAspectRatio: number;
-  croppingDefaultSelectionRatio: number,
-  transformation: [
-    {height: number, crop: string}
-  ]
 }
 
 interface CloudinaryUploadResult {
