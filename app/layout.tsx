@@ -3,6 +3,7 @@ import "./globals.css";
 import { LucideHouse, LucideReceiptText, LucideSearch, LucideUser } from "lucide-react";
 import Link from "next/link";
 import { CldOgImage } from "next-cloudinary";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body
         className={`antialiased p-4`}
       >
+        <SessionProvider>
           {children}
         <CldOgImage src="og-image" alt="social image"/>
 
@@ -45,6 +47,7 @@ export default function RootLayout({
             <LucideUser />
           </Link>
           </nav>
+          </SessionProvider>
       </body>
 
     </html>

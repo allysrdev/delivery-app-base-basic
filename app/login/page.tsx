@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input"
 import Link from 'next/link'
 import { LucideUser } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import { FcGoogle } from "react-icons/fc";
+import { doSocialLoginWithGoogle } from '@/services/actions'
 
 const formSchema = z.object({
   email: z.string().email().nonempty('Insira um e-mail'),
@@ -51,7 +53,7 @@ function Page() {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 min-w-52">
                     <FormField
                     control={form.control}
-                    name="email"
+              name="email"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>E-mail</FormLabel>
@@ -59,8 +61,9 @@ function Page() {
                             <Input className='text-xs' placeholder="seu@email.com" {...field} />
                         </FormControl>
                         <FormMessage />
-                        </FormItem>
-                    )}
+                      </FormItem>
+              )}
+               
                       />
                       <FormField
                     control={form.control}
@@ -76,8 +79,14 @@ function Page() {
                     )}
                       />
                       <div className='w-full flex flex-col gap-4 items-start'>
-                          <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="submit">Entrar</Button>
-                          <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' onClick={() => redirect('/signup')} type='button'>Criar uma Conta</Button>
+              <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="submit">Entrar</Button>
+                   <div className='flex items-center gap-2'>
+                          <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' onClick={() => redirect('/signup')} type='button'>Criar uma Conta</Button>
+
+                <Button className='bg-white/90 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer text-black/70 hover:bg-white/80' onClick={() => doSocialLoginWithGoogle('/signup')} type='button'>
+                  <FcGoogle />
+                  Entrar com Google</Button>
+              </div>
                         <Link className='text-blue-500 hover:text-blue-600 underline flex items-center justify-center gap-2 text-xs' href="/">
                             Esqueci minha senha
                         </Link>

@@ -1,8 +1,8 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, UseFormGetValues } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -13,26 +13,45 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {  LucideUndo, LucideUser, LucideUserPlus } from 'lucide-react'
+import { Loader, LucideUndo, LucideUserPlus } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { redirect } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { Cloudinary } from '@cloudinary/url-gen/index'
+import { addUser } from '@/services/userService'
+import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image'
 
 const formSchema = z.object({
-    email: z.string().email().nonempty('Insira um e-mail'),
-    password: z.string().min(8).nonempty('Insira uma senha'),
-    confirmPassword: z.string(),
-    address: z.string(),
-    telephone: z.string(),
-    profileImage: z.string(),
-})
+        email: z.string(),
+        password: z.string(), // Apenas verifica se não está vazio
+        confirmPassword: z.string(),
+        address: z.string(),
+        telephone: z.string().refine(val => /^\d{10,11}$/.test(val), "Telefone inválido"),
+        profileImage: z.string(),
+    }).refine(data => data.password === data.confirmPassword, {
+        message: "Senhas não coincidem",
+        path: ["confirmPassword"],
+    });
 
-const onSubmit = (data: unknown) => {
-  console.log(data)
-}
 
 function Page() {
     const [step, setStep] = useState(0);
     const [progress, setProgress] = useState(25);
+    const { data: session } = useSession();
+    const [profilePhoto, setProfilePhoto] = useState(session?.user?.image || '/default-avatar.png')
+    const [loading, setLoading] = useState(false);
+
+    
+    useEffect(() => {
+        if (session?.user) {
+            form.setValue('email', session?.user?.email || '')
+            form.resetField('address')
+            form.trigger(["email", "password", "confirmPassword", "address"]);
+            setProfilePhoto(session?.user?.image || '')
+
+        }
+}, [session]);
 
     const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,10 +61,31 @@ function Page() {
         confirmPassword: "",
         address: "",
         telephone: "",
-        profileImage: "/default-avatar.png",
+        profileImage: "",
 
-    },
+        }
   })
+
+    // const cld = new Cloudinary({
+    // cloud: {
+    //   cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    // },
+    // });
+    
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        setLoading(true);
+        console.log(values);
+        try {
+            const userId = uuidv4().toString();
+            setStep(3);
+            setProgress(100);
+            setLoading(false);    
+            addUser(userId, values.email, values.address, values.telephone, session?.user?.image || '/default/avatar.png')
+        } catch (err) {
+            setLoading(false);
+            alert(err)
+        }
+    }
 
 
   return (
@@ -61,17 +101,17 @@ function Page() {
             <Progress value={progress}/>
               
                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 min-w-52">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 min-w-52">
                       {step === 0 ? (
                           <>
                             <FormField
                             control={form.control}
-                            name="email"
+                                  name="email"
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>E-mail</FormLabel>
                                 <FormControl>
-                                    <Input className='text-xs' placeholder="seu@email.com" {...field} />
+                                    <Input  className='text-xs' placeholder="seu@email.com" {...field}  />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -79,12 +119,13 @@ function Page() {
                             />
                       <FormField
                     control={form.control}
-                    name="password"
+                                  name="password"
+                                  disabled={!!session?.user}
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Senha</FormLabel>
                         <FormControl>
-                            <Input className='text-xs' placeholder="Insira a sua senha" {...field} />
+                            <Input type='password' className='text-xs' placeholder="Insira a sua senha" {...field}  value={session?.user?.email ? "379ryqx3498n8qo3xufhqiu" : ''}   />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -93,11 +134,13 @@ function Page() {
                       <FormField
                     control={form.control}
                     name="confirmPassword"
+                    disabled={!!session?.user}
+
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Confirmar senha</FormLabel>
                         <FormControl>
-                            <Input className='text-xs' placeholder="Insira a sua senha" {...field} />
+                            <Input type='password' className='text-xs' placeholder="Insira a sua senha" {...field}  value={session?.user ? "379ryqx3498n8qo3xufhqiu" : ''}   />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -113,7 +156,9 @@ function Page() {
                                 <FormItem>
                                 <FormLabel>Endereço</FormLabel>
                                 <FormControl>
-                                    <Input className='text-xs' placeholder="Informe seu endereço completo" {...field} />
+                                        <Input type='text' className='text-xs' placeholder="Informe seu endereço completo" {...field}
+                                            value={"" || field.value}
+                                       />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -121,7 +166,7 @@ function Page() {
                                   />
                                   <FormField
                             control={form.control}
-                            name="email"
+                            name="telephone"
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Nº de telefone</FormLabel>
@@ -134,9 +179,13 @@ function Page() {
                             />
                               </>
                           ) : (
+        
                                   <div className='flex flex-col items-center gap-8'>
-                                      <div className='bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-full p-6 w-[8rem] h-[8rem] flex items-center justify-center text-white/70'>
-                                          <LucideUser />
+                                      <div className='bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-full p-2 w-[5rem] h-[5rem] flex items-center justify-center text-white/70'>
+                                          <Image className='w-full h-full object-cover rounded-full'
+                                            width="100"
+                                            height="100"
+                                            src={profilePhoto} alt={session?.user?.name || ''} />
                                       </div>
                                   <FormField
                                     control={form.control}
@@ -157,13 +206,14 @@ function Page() {
                                     )}
                                 />
                                   </div>
-                      )
+                      ) 
                       }
                       
                       <div className='w-full flex flex-col gap-4 items-start'>
                           {step === 0 ? (
                               <div className='flex items-center justify-between w-full'>
-                                    <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
+                                  <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={(e) => {
+                                      e.preventDefault();
                                   setStep(1)
                                   setProgress(progress + 25)
                                   }}>Continuar</Button>
@@ -175,7 +225,8 @@ function Page() {
                             
                           ) : step === 1 ? (
                                   <div className='flex items-center justify-between w-full'>
-                                  <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
+                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={(e) => {
+                                          e.preventDefault();
                                       setStep(2)
                                       setProgress(progress + 35
                                       )
@@ -188,11 +239,8 @@ function Page() {
                                       </div>
                               ) : (
                                     <div className='flex items-center justify-between w-full'>
-                                  <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
-                                      setStep(3)
-                                      setProgress(progress + 15
-                                      )
-                                      }}>Finalizar</Button>
+                                          <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="submit"
+                                          >{loading ? <Loader /> : 'Finalizar'}</Button>
 
                                       <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
                                           setStep(1)
