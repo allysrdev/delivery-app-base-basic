@@ -18,11 +18,12 @@ import { Progress } from '@/components/ui/progress'
 import { redirect } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 // import { Cloudinary } from '@cloudinary/url-gen/index'
-import { addUser } from '@/services/userService'
+import { addUser, getUser } from '@/services/userService'
 import { v4 as uuidv4 } from 'uuid';
-import Image from 'next/image'
+import Avatar from '@/components/Avatar'
 
 const formSchema = z.object({
+        name: z.string(),
         email: z.string(),
         password: z.string(), // Apenas verifica se não está vazio
         confirmPassword: z.string(),
@@ -49,13 +50,27 @@ function Page() {
             form.resetField('address')
             form.trigger(["email", "password", "confirmPassword", "address"]);
             setProfilePhoto(session?.user?.image || '')
+            setStep(1)
 
+            alreadyExists();
         }
-}, [session]);
+        
+        
+    }, [session]);
+    
+    async function alreadyExists() {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const user = await getUser(session?.user?.email || '');
+        if (user) { 
+            redirect('/')
+        }
+    }
+    
 
     const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+        defaultValues: {
+        name: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -80,7 +95,7 @@ function Page() {
             setStep(3);
             setProgress(100);
             setLoading(false);    
-            addUser(userId, values.email, values.address, values.telephone, session?.user?.image || '/default/avatar.png')
+            addUser({userId: userId,name: values.name, email: values.email, address: values.address,telephone: values.telephone, profileImage: session?.user?.image || '/default/avatar.png'})
         } catch (err) {
             setLoading(false);
             alert(err)
@@ -92,11 +107,11 @@ function Page() {
     <div className='w-full h-[100vh] flex flex-col items-center overflow-hidden'>
           <div className='bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-6 w-full h-[85%] flex items-center justify-center flex-col gap-8'>
               <div className='flex items-center justify-center flex-col gap-6'>
-                  <h1 className='text-white text-3xl font-bold flex items-center gap-2'>
-                      <LucideUserPlus className='w-[1.875rem] h-[1.875rem]' />  
-                      Cadastre-se</h1>
-                
-                  <p className='text-white text-xs'>Forneça as informações para criar a sua conta</p>
+                   <LucideUserPlus className='w-[1.875rem] h-[1.875rem]' />  
+                    <h1 className='text-white text-3xl font-bold flex items-center gap-2'>
+                    Cadastre-se
+                    </h1>
+                      
               </div>
             <Progress value={progress}/>
               
@@ -170,7 +185,7 @@ function Page() {
                                 <FormItem>
                                 <FormLabel>Nº de telefone</FormLabel>
                                 <FormControl>
-                                    <Input className='text-xs' placeholder="(XX) XXXXX-XXXX" {...field} />
+                                    <Input className='text-xs'  placeholder="(XX) XXXXX-XXXX" {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -180,12 +195,8 @@ function Page() {
                           ) : (
         
                                   <div className='flex flex-col items-center gap-8'>
-                                      <div className='bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-full p-2 w-[5rem] h-[5rem] flex items-center justify-center text-white/70'>
-                                          <Image className='w-full h-full object-cover rounded-full'
-                                            width="100"
-                                            height="100"
-                                            src={profilePhoto} alt={session?.user?.name || ''} />
-                                      </div>
+                                    <Avatar src={profilePhoto} alt={session?.user?.name || ''}  />
+
                                   <FormField
                                     control={form.control}
                                     name="profileImage"
@@ -214,7 +225,7 @@ function Page() {
                                   <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={(e) => {
                                       e.preventDefault();
                                   setStep(1)
-                                  setProgress(progress + 25)
+                                  setProgress(30)
                                   }}>Continuar</Button>
                                   <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
                                   redirect('/login')
@@ -227,23 +238,29 @@ function Page() {
                                       <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={(e) => {
                                           e.preventDefault();
                                       setStep(2)
-                                      setProgress(progress + 35
-                                      )
+                                      setProgress(60)
                                       }}>Continuar</Button>
 
-                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
+                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="button" onClick={() => {
                                           setStep(0)
-                                          setProgress(progress - 35)
+                                          setProgress(30)
                                   }}><LucideUndo /></Button>
                                       </div>
                               ) : (
                                     <div className='flex items-center justify-between w-full'>
                                           <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="submit"
+                                              onClick={() => {
+                                                  setTimeout(() => {
+                                                      setLoading(true);
+                                                      alreadyExists()
+                                                      setLoading(false);
+                                                   }, 2000)
+                                            }}
                                           >{loading ? <Loader /> : 'Finalizar'}</Button>
 
-                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
+                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="button" onClick={() => {
                                           setStep(1)
-                                          setProgress(progress - 15)
+                                          setProgress(60)
                                   }}><LucideUndo /></Button>
                                       </div>
                         ) }
