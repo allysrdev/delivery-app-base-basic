@@ -1,4 +1,4 @@
-import { ref, set, get } from 'firebase/database';
+import { ref, set, get, update } from 'firebase/database';
 import { database } from './firebase'; // Importe a instância já inicializada
 
 export interface User {
@@ -64,5 +64,31 @@ export const getUser = async (email: string): Promise<User | null> => {
   } catch (error) {
     console.error('Erro ao buscar usuário:', error);
     return null; // Retorno explícito para evitar `undefined`
+  }
+};
+
+export const updateUser = async ({ userId, name, email, address, telephone, profileImage }: User): Promise<void> => {
+  const userRef = ref(database, `users/${userId}`);
+
+  try {
+    const snapshot = await get(userRef);
+    
+    if (!snapshot.exists()) {
+      throw new Error('Usuário não encontrado!');
+    }
+
+    await update(userRef, {
+      ...(name && { name }),
+      ...(email && { email }),
+      ...(address && { address }),
+      ...(telephone && { telephone }),
+      ...(profileImage && { profileImage }),
+      updated_at: new Date().toISOString(),
+    });
+
+    console.log('Usuário atualizado com sucesso!');
+  } catch (error) {
+    console.error('Erro na atualização:', error);
+    throw new Error(`Falha ao atualizar usuário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
   }
 };

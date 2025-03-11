@@ -44,7 +44,7 @@ function Page() {
             <FormItem>
               <FormLabel>Pesquisar</FormLabel>
               <FormControl>
-                <Input className='text-xs' placeholder="Digite o nome do produto para encontrar." {...field} />
+                <Input className='text-xs' placeholder="Digite o nome do produto que deseja encontrar." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
