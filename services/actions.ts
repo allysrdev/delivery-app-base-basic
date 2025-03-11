@@ -8,7 +8,3 @@ export async function doSocialLoginWithGoogle(redirectUrl: string) {
 
 }
 
-
-export async function doLogOut() {
-    
-}

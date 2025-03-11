@@ -47,6 +47,7 @@ function Page() {
     useEffect(() => {
         if (session?.user) {
             form.setValue('email', session?.user?.email || '')
+            form.setValue('name', session?.user?.name || '')
             form.resetField('address')
             form.trigger(["email", "password", "confirmPassword", "address"]);
             setProfilePhoto(session?.user?.image || '')
@@ -164,6 +165,20 @@ function Page() {
                           </>
                       ) : step === 1 ?  (
                               <>
+                                   <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Nome Completo</FormLabel>
+                                <FormControl>
+                                        <Input type='text' className='text-xs' placeholder="Informe seu endereço completo" {...field}
+                                       />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                                 )}
+                                  />
                               <FormField
                             control={form.control}
                             name="address"
