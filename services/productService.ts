@@ -9,7 +9,6 @@ export const addProduct = (productId: string, name: string, description: string,
     description: description,
     price: price,
     imagemUrl: imageUrl,
-    name_lowercase: name.toLowerCase(),
   });
 };
 
@@ -45,7 +44,7 @@ export const getProductsBySearch = async (searchTerm: string) => {
       // Atenção: o Firebase Realtime Database suporta queries simples. Se precisar de busca por parte do texto, avalie a estratégia.
       const productsQuery = query(
         productsRef,
-        orderByChild("name_lowercase"),
+        orderByChild('name'),
         startAt(searchTerm),
         endAt(searchTerm + "\uf8ff")
       );
