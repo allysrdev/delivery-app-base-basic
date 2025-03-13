@@ -14,7 +14,7 @@ import CartProductCard from "@/components/CartProductCard";
 import { useCart } from "./context/CartContext";
 
 export default function Home() {
-  const { cart } = useCart();
+  const { cart, addToCart, removeFromCart } = useCart();
   return (
     <div className="flex flex-col gap-4 pb-14">
 
@@ -23,34 +23,34 @@ export default function Home() {
       <Section />
 
       <Popover>
-  <PopoverTrigger asChild>
-    <motion.div
-      initial={{ scale: 1, opacity: 1 }}
-      animate={{ scale: [1, 1, 1] }}
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      className="fixed bottom-1/2 right-8"
-    >
-      <Button
-        className={`w-14 h-14 rounded-full transition-all transform ease-in-out ${
-          cart.length > 0 ? "bg-red-950/30" : "bg-black/30"
-        } backdrop-blur-md border ${
-          cart.length > 0 ? "border-white border-2" : "border-white/30"
-        } shadow-lg text-white  flex items-center justify-center hover:bg-black/50 p-4 cursor-pointer fixed top-24 right-3`}
-      >
+      <PopoverTrigger asChild>
+        <motion.div
+          initial={{ scale: 1, opacity: 1 }}
+          animate={{ scale: [1, 1, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className="fixed bottom-1/2 right-8"
+        >
+        <Button
+          className={`w-14 h-14 rounded-full transition-all transform ease-in-out ${
+            cart.length > 0 ? "bg-red-950/30" : "bg-black/30"
+          } backdrop-blur-md border ${
+            cart.length > 0 ? "border-white border-2" : "border-white/30"
+          } shadow-lg text-white  flex items-center justify-center hover:bg-black/50 p-4 cursor-pointer fixed top-24 right-3`}
+        >
         <ShoppingCart className="w-6 h-6" />
       </Button>
     </motion.div>
   </PopoverTrigger>
 
   <PopoverContent
-    className={`mx-4 bg-black/50 backdrop-blur-md border shadow-lg text-white fixed -top-40 -right-8 min-w-[21.5rem] h-[24rem]
+    className={`mx-4 bg-black/50 backdrop-blur-md border shadow-lg text-white fixed -top-40 -right-8 w-[23rem] min-h-52
     sm:min-w-[35rem] sm:min-h-[35rem] sm:fixed sm:-top-80  sm:right-10 flex flex-col overflow-x-hidden`}
   >
-          <h1 className="font-bold text-xl">Carrinho</h1>
+          <h1 className="font-bold text-xl flex gap-2 items-center">Carrinho</h1>
           
           <div className="flex flex-col">
             {cart.length > 0 ?
-              cart.map((product) => <CartProductCard key={product.id} {...product} />)
+              cart.map((product) => <CartProductCard key={product.id} {...product} addToCart={addToCart} removeFromCart={removeFromCart} />)
               : (
                 <div className="flex items-center justify-center gap-2 h-40">
                   <LucideShoppingCart />
@@ -88,7 +88,7 @@ export default function Home() {
       </div>
     </div>
   </PopoverContent>
-</Popover>;
+      </Popover>
     </div>
   );
 }

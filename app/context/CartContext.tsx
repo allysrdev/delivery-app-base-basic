@@ -37,8 +37,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   function removeFromCart(id: string) {
-      setCart((prev) => prev.filter((p) => p.id !== id));
-      console.log(`Removido do carrinho: ${id}`);
+      setCart((prev) => {
+        return prev
+        .map((p) =>
+            p.id === id ? { ...p, quantity: p.quantity - 1 } : p
+        ) // ⬅️ Reduz 1 na quantidade do produto
+        .filter((p) => p.quantity > 0); // ⬅️ Remove o produto se a quantidade chegar a 0
+    });
+
       
   };
 
