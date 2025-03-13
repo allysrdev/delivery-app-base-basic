@@ -7,51 +7,88 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {  ShoppingCart } from "lucide-react";
+import {  LucideShoppingCart, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import CartProductCard from "@/components/CartProductCard";
+import { useCart } from "./context/CartContext";
 
 export default function Home() {
+  const { cart } = useCart();
   return (
     <div className="flex flex-col gap-4 pb-14">
+
       <Banner />
       <StoreProfile />
       <Section />
 
       <Popover>
-        <PopoverTrigger asChild>
-          <motion.div
-            initial={{ scale: 1, opacity: 1 }}
-            animate={{ scale: [1, 1, 1]}}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="fixed bottom-1/2 right-8"
-          >
-            <Button className="w-14 h-14 rounded-full bg-black/30 backdrop-blur-md border border-white/50 shadow-lg text-white  flex items-center justify-center hover:bg-black/50 p-4 cursor-pointer fixed top-24 right-3">
-              <ShoppingCart className="w-6 h-6" />
-            </Button>
-          </motion.div>
-        </PopoverTrigger>
-        <PopoverContent className=" mx-4 bg-black/50 backdrop-blur-md border border-white/10 shadow-lg text-white 
-        fixed -top-40 -right-8 min-w-[21.5rem] min-h-[24rem]
-        sm:min-w-[35rem] sm:min-h-[35rem]  sm:fixed sm:-top-80  sm:right-10 flex flex-col overflow-x-hidden">
+  <PopoverTrigger asChild>
+    <motion.div
+      initial={{ scale: 1, opacity: 1 }}
+      animate={{ scale: [1, 1, 1] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      className="fixed bottom-1/2 right-8"
+    >
+      <Button
+        className={`w-14 h-14 rounded-full transition-all transform ease-in-out ${
+          cart.length > 0 ? "bg-red-950/30" : "bg-black/30"
+        } backdrop-blur-md border ${
+          cart.length > 0 ? "border-white border-2" : "border-white/30"
+        } shadow-lg text-white  flex items-center justify-center hover:bg-black/50 p-4 cursor-pointer fixed top-24 right-3`}
+      >
+        <ShoppingCart className="w-6 h-6" />
+      </Button>
+    </motion.div>
+  </PopoverTrigger>
+
+  <PopoverContent
+    className={`mx-4 bg-black/50 backdrop-blur-md border shadow-lg text-white fixed -top-40 -right-8 min-w-[21.5rem] h-[24rem]
+    sm:min-w-[35rem] sm:min-h-[35rem] sm:fixed sm:-top-80  sm:right-10 flex flex-col overflow-x-hidden`}
+  >
           <h1 className="font-bold text-xl">Carrinho</h1>
-          <CartProductCard />
-          <CartProductCard />
-          <div className="flex gap-2 flex-col mt-auto">
-            {/* Subtotal, Finalizar Compra */}
-            <div className="w-[95%] h-[1px] bg-white/30 m-auto" />
-            <p className="text-sm">Subtotal: R$10,00</p>
-            <p className="text-sm">Entrega: R$5,00</p>
-            <p className="text-sm font-bold">Total: R$15,00</p>
-            <div className="flex gap-2 items-center">
-              <Button className="w-full h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50  text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer">
-                Finalizar Compra
-              </Button>
-            </div>
+          
+          <div className="flex flex-col">
+            {cart.length > 0 ?
+              cart.map((product) => <CartProductCard key={product.id} {...product} />)
+              : (
+                <div className="flex items-center justify-center gap-2 h-40">
+                  <LucideShoppingCart />
+                <p>Carrinho vazio</p>
+              </div>
+            )}
+            
           </div>
-        </PopoverContent>
-      </Popover>
+
+    <div className="flex gap-2 flex-col mt-auto">
+      {/* Subtotal, Entrega e Total Dinâmicos */}
+      <div className="w-[95%] h-[1px] bg-white/30 m-auto" />
+
+      {/** 📌 Cálculo do Subtotal */}
+      <p className="text-sm">
+        Subtotal: R$
+        {cart.reduce((acc, product) => acc + product.price * product.quantity, 0).toFixed(2)}
+      </p>
+
+      {/** 📌 Valor fixo da Entrega (pode ser variável no futuro) */}
+      <p className="text-sm">Entrega: R$5,00</p>
+
+      {/** 📌 Cálculo do Total = Subtotal + Entrega */}
+      <p className="text-sm font-bold">
+        Total: R$
+        {(
+          cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 5
+        ).toFixed(2)}
+      </p>
+
+      <div className="flex gap-2 items-center">
+        <Button className="w-full h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50  text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer">
+          Finalizar Compra
+        </Button>
+      </div>
+    </div>
+  </PopoverContent>
+</Popover>;
     </div>
   );
 }

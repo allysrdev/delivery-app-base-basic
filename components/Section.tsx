@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react'
 import ProductCard, { Product } from './ProductCard'
 import { getProducts } from '@/services/productService';
 import { Loader } from 'lucide-react';
+import { useCart } from '@/app/context/CartContext';
 
 function Section() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true);
+  const { addToCart, removeFromCart, cart } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -34,8 +36,19 @@ function Section() {
           {loading? (
             <div className='w-full h-full flex items-center justify-center'><Loader className='m-auto'/></div>
           ) : null}
-        {products.map(product => {
-          return <ProductCard key={product.id} description={product.description} id={product.id} imageUrl={product.imageUrl} name={product.name} price={product.price} />
+        {products.map((product) => {
+          const cartItem = cart.find((item) => item.id === product.id);
+          const quantity = cartItem ? cartItem.quantity : 0;
+
+          return (
+            <ProductCard
+              key={product.id}
+              {...product}
+              quantity={quantity}
+              addToCart={addToCart}
+              removeFromCart={removeFromCart}
+            />
+          );
         })}
         </div>
     </div>

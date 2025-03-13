@@ -6,6 +6,7 @@ import { CldOgImage } from "next-cloudinary";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import Image from "next/image";
+import { CartProvider } from "./context/CartContext";
 
 export const metadata: Metadata = {
   title: "Dummy Lanches",
@@ -29,7 +30,9 @@ export default async function RootLayout({
 
       <body className="antialiased p-4">
         <SessionProvider>
-          {children}
+          <CartProvider>
+            {children}
+          </CartProvider>
           <CldOgImage src="og-image" alt="social image"/>
 
           <nav className="bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-2 fixed bottom-0 left-0 w-full flex items-center justify-around">
