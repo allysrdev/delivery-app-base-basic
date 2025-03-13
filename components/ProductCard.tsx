@@ -12,7 +12,7 @@ export interface Product {
   price: number;
   imageUrl: string;
   description?: string;
-  quantity: 0;
+  quantity: number;
   addToCart?: (item: CartItem) => void;
   removeFromCart?: (id: string) => void;
 }
