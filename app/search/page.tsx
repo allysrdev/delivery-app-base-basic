@@ -16,6 +16,7 @@ import {
 import { LucideSearch } from 'lucide-react'
 import ProductCard, { Product } from '@/components/ProductCard'
 import { getProductsBySearch } from '@/services/productService'
+import { useCart } from '../context/CartContext'
  
 const formSchema = z.object({
   search: z.string()
@@ -25,6 +26,7 @@ function Page() {
   const [products, setProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedTerm, setDebouncedTerm] = useState(searchTerm);
+  const { cart, addToCart, removeFromCart } = useCart()
 
 useEffect(() => {
     const handler = setTimeout(() => {
@@ -101,11 +103,20 @@ async function onSubmit() {
             ) : (
                 <div className='w-full max-h-96 gap-2 flex flex-col sm:flex-row'>
                 
-                  {products.map((product: Product) => (
-                    <ProductCard key={product.id} description={product.description} imageUrl={product.imageUrl} name={product.name} price={product.price} id={product.id} />
-                      
-                  ))
-                  }
+                  {products.map((product) => {
+                      const cartItem = cart.find((item) => item.id === product.id);
+                      const quantity = cartItem ? cartItem.quantity : 0;
+
+                      return (
+                        <ProductCard
+                          key={product.id}
+                          {...product}
+                          quantity={quantity} 
+                          addToCart={addToCart}
+                          removeFromCart={removeFromCart}
+                        />
+                      );
+                    })}
 
                   </div>
             )
