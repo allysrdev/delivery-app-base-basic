@@ -27,7 +27,10 @@ const formSchema = z.object({
         email: z.string(),
         password: z.string(), // Apenas verifica se não está vazio
         confirmPassword: z.string(),
-        address: z.string(),
+        street: z.string(),
+        number: z.string(),
+        reference: z.string(),
+        neighborhood: z.string(),
         telephone: z.string().refine(val => /^\d{10,11}$/.test(val), "Telefone inválido"),
         profileImage: z.string(),
     }).refine(data => data.password === data.confirmPassword, {
@@ -48,16 +51,17 @@ function Page() {
         if (session?.user) {
             form.setValue('email', session?.user?.email || '')
             form.setValue('name', session?.user?.name || '')
-            form.resetField('address')
-            form.trigger(["email", "password", "confirmPassword", "address"]);
+            form.resetField('street')
+            form.trigger(["email", "password", "confirmPassword", "street"]);
             setProfilePhoto(session?.user?.image || '')
             setStep(1)
-
             alreadyExists();
         }
         
         
     }, [session]);
+
+    
     
     async function alreadyExists() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -75,7 +79,10 @@ function Page() {
         email: "",
         password: "",
         confirmPassword: "",
-        address: "",
+        street: "",
+        number: "",
+        reference: "",
+        neighborhood: "",
         telephone: "",
         profileImage: "",
 
@@ -91,12 +98,14 @@ function Page() {
     function onSubmit(values: z.infer<typeof formSchema>) {
         setLoading(true);
         console.log(values);
+
+        const address = values.street + ", " + values.number + ", " + values.neighborhood + ", " + values.reference
         try {
             const userId = uuidv4().toString();
             setStep(3);
             setProgress(100);
             setLoading(false);    
-            addUser({userId: userId,name: values.name, email: values.email, address: values.address,telephone: values.telephone, profileImage: session?.user?.image || '/default/avatar.png'})
+            addUser({userId: userId,name: values.name, email: values.email, address,telephone: values.telephone, profileImage: session?.user?.image || '/default/avatar.png'})
         } catch (err) {
             setLoading(false);
             alert(err)
@@ -106,7 +115,7 @@ function Page() {
 
   return (
     <div className='w-full h-[100vh] flex flex-col items-center overflow-hidden'>
-          <div className='bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-6 w-full h-[85%] flex items-center justify-center flex-col gap-8'>
+          <div className='bg-black/30 backdrop-blur-md shadow-lg rounded-md p-6 w-full h-[85%] flex items-center justify-center flex-col gap-8'>
               <div className='flex items-center justify-center flex-col gap-6'>
                    <LucideUserPlus className='w-[1.875rem] h-[1.875rem]' />  
                     <h1 className='text-white text-3xl font-bold flex items-center gap-2'>
@@ -179,20 +188,100 @@ function Page() {
                                 </FormItem>
                                  )}
                                   />
-                              <FormField
+                             <FormField
                             control={form.control}
-                            name="address"
+                            name="street"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Endereço</FormLabel>
+                                <FormLabel>Rua</FormLabel>
                                 <FormControl>
-                                        <Input type='text' className='text-xs' placeholder="Informe seu endereço completo" {...field}
-                                       />
-                                </FormControl>
+                                    <Input
+                                    type="text"
+                                    className="text-xs"
+                                    placeholder="Informe o nome da sua rua"
+                                            value={field.value || ''}
+                                            onChange={(e) => {
+                                                form.setValue('street', e.target.value);
+                                                form.trigger('street');
+                                            }}
+                                            
+                                />
+                                    </FormControl>
                                 <FormMessage />
                                 </FormItem>
-                                 )}
+                            )}
                                   />
+                                  <div className='flex justify-evenly gap-2'>
+                                    <FormField
+                                        control={form.control}
+                                        name="number"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                            <FormLabel>Nº</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                type="text"
+                                                className="text-xs w-1/2"
+                                                placeholder="Nº"
+                                                        value={field.value || ''}
+                                                        onChange={(e) => {
+                                                            form.setValue('number', e.target.value);
+                                                            form.trigger('number');
+                                                        }}
+                                                        
+                                            />
+                                                </FormControl>
+                                            <FormMessage />
+                                            </FormItem>
+                                        )}
+                                      />
+                                       <FormField
+                                        control={form.control}
+                                        name="neighborhood"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                            <FormLabel>Bairro</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                type="text"
+                                                className="text-xs"
+                                                placeholder="Bairro"
+                                                {...field}
+                                                        
+                                                 onChange={(e) => {
+                                                            form.setValue('neighborhood', e.target.value);
+                                                            form.trigger('neighborhood');
+                                                        }}
+                                            />
+                                                </FormControl>
+                                            <FormMessage />
+                                            </FormItem>
+                                        )}
+                                      />
+                                        <FormField
+                                        control={form.control}
+                                        name="reference"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                            <FormLabel>Complemento</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                type="text"
+                                                className="text-xs"
+                                                        placeholder="Casa, Nº Apto..."
+                                                        value={field.value || ''}
+                                                        onChange={(e) => {
+                                                            form.setValue('reference', e.target.value);
+                                                            form.trigger('reference');
+                                                        }}
+                                                        
+                                            />
+                                                </FormControl>
+                                            <FormMessage />
+                                            </FormItem>
+                                        )}
+                                        />
+                                      </div>
                                   <FormField
                             control={form.control}
                             name="telephone"
@@ -201,7 +290,7 @@ function Page() {
                                 <FormLabel>Nº de telefone</FormLabel>
                                 <FormControl>
                                     <Input className='text-xs'  placeholder="(XX) XXXXX-XXXX" {...field} />
-                                </FormControl>
+                                    </FormControl>
                                 <FormMessage />
                                 </FormItem>
                                  )}
