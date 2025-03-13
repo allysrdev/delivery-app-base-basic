@@ -13,6 +13,7 @@ export interface Product {
   imageUrl: string;
   description?: string;
   quantity: number;
+  category?: string;
   addToCart?: (item: CartItem) => void;
   removeFromCart?: (id: string) => void;
 }

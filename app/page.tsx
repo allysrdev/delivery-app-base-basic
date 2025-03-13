@@ -61,19 +61,15 @@ export default function Home() {
           </div>
 
     <div className="flex gap-2 flex-col mt-auto">
-      {/* Subtotal, Entrega e Total Dinâmicos */}
       <div className="w-[95%] h-[1px] bg-white/30 m-auto" />
 
-      {/** 📌 Cálculo do Subtotal */}
       <p className="text-sm">
         Subtotal: R$
         {cart.reduce((acc, product) => acc + product.price * product.quantity, 0).toFixed(2)}
       </p>
 
-      {/** 📌 Valor fixo da Entrega (pode ser variável no futuro) */}
       <p className="text-sm">Entrega: R$5,00</p>
 
-      {/** 📌 Cálculo do Total = Subtotal + Entrega */}
       <p className="text-sm font-bold">
         Total: R$
         {(
