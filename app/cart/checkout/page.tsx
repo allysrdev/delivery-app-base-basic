@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/app/context/CartContext";
 import {
@@ -20,24 +17,11 @@ import { loadStripe } from "@stripe/stripe-js"
 import CheckoutElement from "@/components/CheckoutElement";
 
 
-// Schema de validação
-const customerSchema = z.object({
-  fullName: z.string().min(3, "Nome deve ter pelo menos 3 caracteres").max(100),
-  email: z.string().email("E-mail inválido").max(150),
-  cpf: z.string().regex(/^\d+$/, "Apenas números são permitidos"),
-  ddd: z.string().length(2, "DDD deve ter 2 dígitos").regex(/^\d+$/, "Apenas números são permitidos"),
-  phone: z.string().min(8, "Telefone inválido").max(9, "Telefone muito longo").regex(/^\d+$/, "Apenas números são permitidos"),
-});
-
-type CustomerData = z.infer<typeof customerSchema>;
-
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 const CheckoutPage = () => {
   const { cart } = useCart();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const session = useSession();
 
@@ -54,13 +38,6 @@ const CheckoutPage = () => {
     fetchUser();
    })
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CustomerData>({
-    resolver: zodResolver(customerSchema),
-  });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
