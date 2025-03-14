@@ -55,7 +55,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-black p-4">
-      <div className="max-w-2xl mx-auto bg-black rounded-lg shadow-md p-18">
+      <div className="w-full sm:max-w-2xl mx-auto bg-black rounded-lg shadow-md p-5">
         <h1 className="text-3xl font-bold text-center mb-8">Finalizar Compra</h1>
 
         {cart.length === 0 ? (
@@ -63,7 +63,7 @@ const CheckoutPage = () => {
             <p className="text-xl text-gray-400">Seu carrinho está vazio</p>
           </div>
         ) : (
-          <Accordion type="single" collapsible>
+          <Accordion className="w-full" type="single" collapsible>
             <AccordionItem value="item-1" >
               <AccordionTrigger>Pagar na Entrega</AccordionTrigger>
               <AccordionContent>
