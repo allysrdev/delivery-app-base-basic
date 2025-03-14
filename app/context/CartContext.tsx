@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect} from "react";
 
 export type CartItem = {
   id: string;
@@ -20,6 +21,23 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Carrega do localStorage apenas após montagem no cliente
+  useEffect(() => {
+    setIsMounted(true);
+    const storedCart = localStorage.getItem('cart');
+    if (storedCart) {
+      setCart(JSON.parse(storedCart));
+    }
+  }, []);
+
+  // Persiste no localStorage
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+  }, [cart, isMounted]);
 
   function addToCart(item: CartItem) {
     setCart((prev) => {
@@ -31,28 +49,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prev, { ...item, quantity: 1 }];
     });
-     
-    console.log(`Adicionado ao carrinho: ${item.name}`);
-      
-  };
+  }
 
   function removeFromCart(id: string) {
-      setCart((prev) => {
-        return prev
+    setCart((prev) => {
+      return prev
         .map((p) =>
-            p.id === id ? { ...p, quantity: p.quantity - 1 } : p
-        ) // ⬅️ Reduz 1 na quantidade do produto
-        .filter((p) => p.quantity > 0); // ⬅️ Remove o produto se a quantidade chegar a 0
+          p.id === id ? { ...p, quantity: p.quantity - 1 } : p
+        )
+        .filter((p) => p.quantity > 0);
     });
-
-      
-  };
+  }
 
   const updateQuantity = (id: string, quantity: number) => {
     setCart((prev) =>
       prev.map((p) => (p.id === id ? { ...p, quantity } : p))
-      );
-      
+    );
   };
 
   return (

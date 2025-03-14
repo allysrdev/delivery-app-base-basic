@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import CartProductCard from "@/components/CartProductCard";
 import { useCart } from "./context/CartContext";
+import { redirect } from "next/navigation";
 
 export default function Home() {
   const { cart, addToCart, removeFromCart } = useCart();
@@ -78,7 +79,7 @@ export default function Home() {
       </p>
 
       <div className="flex gap-2 items-center">
-        <Button className="w-full h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50  text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer">
+        <Button onClick={() => redirect('/cart/checkout')} className="w-full h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50  text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer">
           Finalizar Compra
         </Button>
       </div>
