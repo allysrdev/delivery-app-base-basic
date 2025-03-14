@@ -18,7 +18,12 @@ import CheckoutElement from "@/components/CheckoutElement";
 
 
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY;
+if (!stripeKey) {
+  throw new Error('Chave pública do Stripe não configurada!');
+}
+
+const stripePromise = loadStripe(stripeKey);
 
 const CheckoutPage = () => {
   const { cart } = useCart();
