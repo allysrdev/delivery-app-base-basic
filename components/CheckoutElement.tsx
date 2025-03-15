@@ -44,7 +44,6 @@ export default function CheckoutElement({
             setLoading(false);
             return;
         }
-
         const { error } = await stripe.confirmPayment({
             elements,
             clientSecret,

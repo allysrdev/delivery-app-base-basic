@@ -16,6 +16,8 @@ import { redirect } from "next/navigation";
 
 export default function Home() {
   const { cart, addToCart, removeFromCart } = useCart();
+    
+  
   return (
     <div className="flex flex-col gap-4 pb-14">
 
@@ -79,7 +81,9 @@ export default function Home() {
       </p>
 
       <div className="flex gap-2 items-center">
-        <Button onClick={() => redirect('/cart/checkout')} className="w-full h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50  text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer">
+              <Button onClick={() => {
+                redirect('/cart/checkout')
+              }} className="w-full h-10 rounded-md bg-black/30 backdrop-blur-md border border-white/50  text-white shadow-lg flex items-center justify-center hover:bg-black/60 p-4 cursor-pointer">
           Finalizar Compra
         </Button>
       </div>
