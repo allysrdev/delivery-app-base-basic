@@ -15,6 +15,8 @@ import Image from "next/image"
 import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 import CheckoutElement from "@/components/CheckoutElement";
+import Box from "@/components/ui/box";
+import { LucideAtSign, LucideMapPinHouse, LucidePhoneCall, LucideUser } from "lucide-react";
 
 
 
@@ -54,7 +56,7 @@ const CheckoutPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-black p-4">
+    <div className="min-h-screen bg-black p-4 pb-10">
       <div className="w-full sm:max-w-2xl mx-auto bg-black rounded-lg shadow-md p-5">
         <h1 className="text-3xl font-bold text-center mb-8">Finalizar Compra</h1>
 
@@ -63,11 +65,18 @@ const CheckoutPage = () => {
             <p className="text-xl text-gray-400">Seu carrinho está vazio</p>
           </div>
         ) : (
-          <Accordion className="w-full" type="single" collapsible>
-            <AccordionItem value="item-1" >
-              <AccordionTrigger>Pagar na Entrega</AccordionTrigger>
-              <AccordionContent>
-                  <div className="flex flex-col gap-4">
+            <Accordion className="w-full" type="single" collapsible>
+              <div className="flex flex-col gap-4">
+                <Box>
+                  <div className="w-full h-full flex flex-col gap-2">
+
+                      <p className="text-xs flex gap-1"><LucideUser size={15} />{user?.name}</p>
+                      <p className="text-xs flex gap-1"><LucideAtSign size={15}  />{user?.email }</p>
+                      <p className="text-xs flex gap-1"><LucidePhoneCall size={15} />{user?.telephone }</p>
+                      <p className="text-xs flex gap-1"><LucideMapPinHouse size={15} />{user?.address}</p>
+                  </div>
+                    </Box>
+                    
                     {cart.map((item) => {
                       return (
                         <div key={item.id} className="flex gap-2">
@@ -81,25 +90,24 @@ const CheckoutPage = () => {
                       );
                     })}
                     <div>
-                      <p>Nome: {user?.name}</p>
-                      <p>E-mail:{user?.email }</p>
-                      <p>Telefone: {user?.telephone }</p>
-                      <p>Endereço:{user?.address}</p>
-                    </div>
-                    <div>
                       <p>Subtotal: {formatCurrency(cart.reduce((acc, product) => acc + product.price * product.quantity, 0))}</p>
                       <p>Frete: R$ 10</p>
                       <p className="font-bold">Total: {formatCurrency(cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10)}</p>
                     </div>
 
-                <Button className='cursor-pointer h-12 bg-black border border-white/30'>Fazer Pedido</Button>
-
                 </div>
+            <AccordionItem value="item-1" >
+              <AccordionTrigger>Pagar na Entrega</AccordionTrigger>
+              <AccordionContent>
+                  
+
+                <Button className='cursor-pointer h-12 bg-black border border-white/30'>Fazer Pedido</Button>
               </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-2">
               <AccordionTrigger>Pagar com Cartão</AccordionTrigger>
+              
               <AccordionContent>
                   <Elements
                     stripe={stripePromise}
@@ -113,7 +121,15 @@ const CheckoutPage = () => {
                     <CheckoutElement amount={(cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10) * 100} />
                 </Elements>
               </AccordionContent>
-            </AccordionItem>
+              </AccordionItem>
+              <AccordionItem value="item-3" >
+              <AccordionTrigger>Pagar com Pix</AccordionTrigger>
+              <AccordionContent>
+                  
+
+                <Button className='cursor-pointer h-12 bg-black border border-white/30'>Fazer Pedido</Button>
+              </AccordionContent>
+              </AccordionItem>
           </Accordion>
         )}
       </div>

@@ -42,7 +42,7 @@ export default async function RootLayout({
             <Link href="/search" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
               <LucideSearch />
             </Link>
-            <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
+            <Link href="/pedidos" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
               <LucideReceiptText />
             </Link>
             <Link href="/user" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
