@@ -13,11 +13,31 @@ import { motion } from "framer-motion";
 import CartProductCard from "@/components/CartProductCard";
 import { useCart } from "./context/CartContext";
 import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { getUser, User } from "@/services/userService";
 
 export default function Home() {
   const { cart, addToCart, removeFromCart } = useCart();
-    
+  const session = useSession()
+  const [user, setUser] = useState<User | null>(null);
   
+  useEffect(() => {
+  const fetchUser = async () => {
+    if (session?.data?.user) {
+      const userData = await getUser(session?.data?.user?.email || ''); // Certifique-se de que o identificador seja correto
+      setUser(userData as User);
+    }
+  };
+
+  fetchUser();
+}, [session]); // Executa quando `session` muda
+
+useEffect(() => {
+  if (user && user.address === "") {
+    redirect("/login"); // Redirecionamento após `user` ser atualizado
+  }
+}, [user]); // Executa quando `user` muda
   return (
     <div className="flex flex-col gap-4 pb-14">
 

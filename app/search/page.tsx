@@ -103,7 +103,7 @@ async function onSubmit() {
             ) : (
                 <div className='w-full max-h-96 gap-2 flex flex-col sm:flex-row'>
                 
-                  {products.map((product) => {
+                  {products.map((product: React.JSX.IntrinsicAttributes & Product) => {
                       const cartItem = cart.find((item) => item.id === product.id);
                       const quantity = cartItem ? cartItem.quantity : 0;
 

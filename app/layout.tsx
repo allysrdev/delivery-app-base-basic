@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import Image from "next/image";
 import { CartProvider } from "./context/CartContext";
+import ClientAuthCheck from "@/services/ClientAuthCheck";
 
 export const metadata: Metadata = {
   title: "Dummy Lanches",
@@ -19,6 +20,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+ 
   
 
   return (
@@ -28,6 +30,7 @@ export default async function RootLayout({
         async 
         defer
       />
+            {session?.user?.email && <ClientAuthCheck email={session.user.email} />}
 
       <body className="antialiased p-4">
         <SessionProvider>
