@@ -2,6 +2,7 @@ import React from 'react'
 import Box from './ui/box'
 import Image from 'next/image'
 import { Button } from './ui/button'
+import { Loader } from 'lucide-react'
 
 export default function OrderComponent({
     orderId ,
@@ -36,15 +37,19 @@ export default function OrderComponent({
               />
               Pedido nº {orderId} - {createdAt}
           </h1>
-              {items.map((item) => {
-                  return (
-                  <div key={item.id} className='flex flex-cols items-start gap-2'>
-                          <h1 className='font-semibold'>{item.name}</h1>
-                        <p className='font-semibold'>Qnt.: {item.quantity}</p>
-                          <p className='font-semibold'>R${item.price}</p>
+              {items && items.length > 0 ? (
+                items.map((item) => (
+                    <div key={item.id} className="flex flex-col items-start gap-2">
+                    <h1 className="font-semibold">{item.name}</h1>
+                    <p className="font-semibold">Qnt.: {item.quantity}</p>
+                    <p className="font-semibold">R${item.price}</p>
                     </div>
-              )
-              })}
+                ))
+                ) : (
+                <div  className="flex flex-col center justify-center">
+                          <Loader />
+                </div>
+                )}
               <h1 className='font-semibold flex gap-2 text-sm'>
               <Image
                   src={'/money.png'}

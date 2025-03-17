@@ -1,9 +1,11 @@
 'use client'
 import { useCart } from '@/app/context/CartContext';
+import { Progress } from '@/components/ui/progress';
 import { createOrder } from '@/services/orderService';
 import { getUser, User } from '@/services/userService';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image'
+import { redirect } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
 function Page() {
@@ -39,6 +41,7 @@ function Page() {
       }));
     createOrder(user?.userId || '', user?.telephone || '', user?.name || '', user?.email || '', user?.address || '', items, (cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10), 'Pedido solicitado')
     setTimeout(() => setStep(2), 2000)
+    setTimeout(() => redirect('/pedidos'), 1000)
 
   }
   
@@ -50,7 +53,7 @@ function Page() {
             <>
             <Image src={'/credit-card.png'} width={40} height={40} alt=''/>
               <br />
-              <p>......</p>
+              <Progress value={33} />
               <br />
             <h1>Pagamento aprovado!</h1>
             </>
@@ -59,7 +62,8 @@ function Page() {
               <>
       <Image src={'/delivery.png'} width={40} height={40} alt='' />
              <br />
-              <p>...............</p>
+              <Progress value={50} />
+
               <br />
                 <h1>Processando pedido</h1>
       
@@ -69,9 +73,10 @@ function Page() {
                 <>
         <Image src={'/shopping-bag.png'} width={40} height={40} alt='' />
              <br />
-              <p>..............................</p>
+              <Progress value={100} />
+
               <br />
-                  <h1>Aguardando confirmação da loja</h1>
+                  <h1>Pedido enviado!</h1>
                 </>
       
       )

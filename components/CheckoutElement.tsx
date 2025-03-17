@@ -58,7 +58,7 @@ export default function CheckoutElement({
         }
     }
   return (
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4 bg-white/50 p-4 rounded-md'>
+      <form onSubmit={handleSubmit} className='flex flex-col gap-4 bg-white/80 p-4 rounded-md'>
           {clientSecret && <PaymentElement />}
           {errorMessage && <p className='text-red-500'>{errorMessage}</p>}
           <Button disabled={!stripe || loading} className={`cursor-pointer h-12 ${loading ? 'bg-blue-800 hover:bg-blue-900' : 'bg-black'} border border-white/30 transition transform ease-in-out`}>{
