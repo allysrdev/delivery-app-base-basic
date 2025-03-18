@@ -42,13 +42,13 @@ export default function Page() {
                       <Box>
                           <div className="flex flex-col space-y-3">
                             <div className="space-y-2">
-                                  <Skeleton className="h-4 w-[350px]" />
+                                  <Skeleton className="h-4 sm:w-[350px] w-[150px]" />
                                   <br />
-                                <Skeleton className="h-4 w-[200px]" />
-                                <Skeleton className="h-4 w-[50px]" />
-                                  <Skeleton className="h-4 w-[50px]" />
+                                <Skeleton className="h-4 sm:w-[200px] w-[50px]" />
+                                <Skeleton className="h-4 sm:w-[50px] w-[20px]" />
+                                  <Skeleton className="h-4 sm:w-[50px] w-[20px]" />
                                   <br />
-                                <Skeleton className="h-4 w-[120px]" />
+                                <Skeleton className="h-4 sm:w-[150px] w-[60px]" />
                             </div>
                             </div>
                     </Box>

@@ -40,24 +40,13 @@ function Section() {
             <h1 className="font-bold text-xl">Carregando</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <Box>
-              <div className="flex flex-col space-y-3">
-              <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+              <div className="flex sm:flex-col sm:space-y-3 space-x-3">
+              <Skeleton className="h-[125px] min-w-[130px] rounded-xl" />
               <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-3 w-[200px]" />
-                <Skeleton className="h-3 w-[200px]" />
-                <Skeleton className="h-4 w-[40px]" />
-                </div>
-              </div>
-            </Box>
-            <Box>
-              <div className="flex flex-col space-y-3">
-              <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-3 w-[200px]" />
-                <Skeleton className="h-3 w-[200px]" />
-                <Skeleton className="h-4 w-[40px]" />
+                <Skeleton className="h-4 sm:w-[250px] w-[150px]" />
+                <Skeleton className="h-3 sm:w-[200px] w-[50px]" />
+                <Skeleton className="h-3 sm:w-[200px] w-[50px]" />
+                <Skeleton className="h-4 sm:w-[40px] w-[20px]" />
                 </div>
               </div>
             </Box>
