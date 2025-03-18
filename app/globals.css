@@ -127,7 +127,6 @@
   }
 }
 
-
 /* Estiliza a barra de rolagem para navegadores Webkit (Chrome, Edge, Safari) */
 ::-webkit-scrollbar {
   width: 8px;
@@ -148,4 +147,13 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #888;
   /* Cor ao passar o mouse */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

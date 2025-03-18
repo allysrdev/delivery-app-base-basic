@@ -37,6 +37,10 @@ const CheckoutPage = () => {
 
   useEffect(() => { 
     const fetchUser = async () => {
+      if (!session.data) {
+        redirect('/login');
+        return;
+      }
       try {
         const userData = await getUser(session.data?.user?.email || '');
         setUser(userData);
@@ -50,7 +54,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     const order = async () => {
       const userOrders = await getOrdersByUser(user?.email || '');
-      const hasPendingOrder = userOrders?.some(order => order.status === "Pedido solicitado")
+      const hasPendingOrder = userOrders?.some(order => order.status === "Pendente")
       if (hasPendingOrder) {
         redirect('/pedidos')
       }

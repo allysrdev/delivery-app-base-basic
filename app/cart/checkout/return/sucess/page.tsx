@@ -56,7 +56,7 @@ function Page() {
             user?.address || '',
             items,
             cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10,
-            'Pedido solicitado'
+
         );
 
         setTimeout(() => setStep(2), 2000);

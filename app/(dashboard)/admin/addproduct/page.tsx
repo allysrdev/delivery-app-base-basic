@@ -1,12 +1,13 @@
 "use client"
 import { useState } from "react";
-import { database } from '../../../services/firebase' ; 
+import { database } from '../../../../services/firebase' ; 
 import { ref as dbRef, set } from "firebase/database";
 import { v4 as uuidv4 } from "uuid";
 import CloudinaryUploadWidget from "@/components/CloudinaryUploadWidget";
 import { Cloudinary } from '@cloudinary/url-gen';
 import { AdvancedImage, responsive, placeholder } from '@cloudinary/react';
 import { Input } from "@/components/ui/input";
+import Box from "@/components/ui/box";
 const AddProduct = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -62,7 +63,9 @@ const AddProduct = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 max-w-md mx-auto rounded-lg shadow-lg pb-16">
+    <div className="flex justify-center">
+      <Box>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 min-w-md mx-auto rounded-lg shadow-lg pb-16">
       <h2 className="text-lg font-bold">Adicionar Produto</h2>
         <label htmlFor="productName">
           Nome do Produto
@@ -139,6 +142,11 @@ const AddProduct = () => {
 
 
       </form>
+      </Box>
+      <div className="text-center mt-8">
+        lista de produtos
+      </div>
+      </div>
   );
 };
 
