@@ -105,7 +105,7 @@ function Page() {
             setStep(3);
             setProgress(100);
             setLoading(false);    
-            addUser({userId: userId,name: values.name, email: values.email, address,telephone: values.telephone, profileImage: session?.user?.image || '/default/avatar.png'})
+            addUser({userId: userId,name: values.name, email: values.email, address,telephone: values.telephone, profileImage: session?.user?.image || '/default/avatar.png', role: "Usuário"})
         } catch (err) {
             setLoading(false);
             alert(err)
