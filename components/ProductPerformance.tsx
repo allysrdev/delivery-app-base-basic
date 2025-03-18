@@ -1,11 +1,14 @@
 'use client'
 
 import { useMemo } from 'react'
-import Chart from 'react-apexcharts'
+import dynamic from 'next/dynamic'
 import { ApexOptions } from 'apexcharts'
 import { groupBy, sum } from 'lodash'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Order } from '@/services/orderService'
+
+// Importa o gráfico dinamicamente e desativa o SSR
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
 interface ProductPerformanceProps {
   orders: Order[]
@@ -33,16 +36,7 @@ export default function ProductPerformance({ orders }: ProductPerformanceProps) 
     chart: {
       type: 'bar',
       toolbar: {
-        show: true,
-        tools: {
-          download: true,
-          selection: true,
-          zoom: true,
-          zoomin: true,
-          zoomout: true,
-          pan: true,
-          reset: true
-        }
+        show: true
       }
     },
     plotOptions: {
@@ -56,27 +50,10 @@ export default function ProductPerformance({ orders }: ProductPerformanceProps) 
     },
     dataLabels: {
       enabled: true,
-      formatter: (val: number) => `R$${val.toLocaleString()}`,
-      offsetX: 0,
-      style: {
-        fontSize: '12px',
-        colors: ['#1F2937']
-      }
+      formatter: (val: number) => `R$${val.toLocaleString()}`
     },
     xaxis: {
-      categories: productData.map(product => product.name),
-      labels: {
-        style: {
-          colors: '#6B7280'
-        }
-      }
-    },
-    yaxis: {
-      labels: {
-        style: {
-          colors: '#6B7280'
-        }
-      }
+      categories: productData.map(product => product.name)
     },
     colors: ['#3b82f6'],
     tooltip: {
@@ -99,12 +76,7 @@ export default function ProductPerformance({ orders }: ProductPerformanceProps) 
         <CardTitle>Desempenho dos Produtos</CardTitle>
       </CardHeader>
       <CardContent>
-        <Chart
-          options={chartOptions}
-          series={chartSeries}
-          type="bar"
-          height={350}
-        />
+        <Chart options={chartOptions} series={chartSeries} type="bar" height={350} />
       </CardContent>
     </Card>
   )

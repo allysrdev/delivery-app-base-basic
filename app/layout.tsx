@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { CartProvider } from './context/CartContext';
 import ClientAuthCheck from '@/services/ClientAuthCheck';
 import { headers } from 'next/headers';
+import { StoreProvider } from './context/StoreContext';
 
 export const metadata: Metadata = {
   title: 'Dummy Lanches',
@@ -33,6 +34,7 @@ export default async function RootLayout({
 
       <body className="antialiased p-4">
         <SessionProvider>
+          <StoreProvider>
           <CartProvider>{children}</CartProvider>
           <CldOgImage src="og-image" alt="social image" />
 
@@ -61,7 +63,8 @@ export default async function RootLayout({
                 )}
               </Link>
             </nav>
-          )}
+            )}
+            </StoreProvider>
         </SessionProvider>
       </body>
     </html>

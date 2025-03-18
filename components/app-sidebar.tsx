@@ -1,3 +1,4 @@
+"use client"
 import { ArrowLeft, DollarSignIcon, Receipt, ScanBarcode, Settings, Users } from "lucide-react"
 
 import {
@@ -12,6 +13,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import Avatar from "./Avatar"
+import { getUser, User } from "@/services/userService"
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 
 // Menu items.
 const items = [
@@ -49,17 +53,30 @@ const items = [
 ]
 
 export function AppSidebar() {
+    const session = useSession();
+    const [user, setUser] = useState<User | null>(null);
+    useEffect(() => { 
+        const fetchUser = async () => {
+            try {
+                const userData = await getUser(session.data?.user?.email || '');
+                setUser(userData as User);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        fetchUser();
+    }, [session.data?.user])
   return (
-    <Sidebar className=" text-gray-50">
+    <Sidebar className=" sm:text-gray-50">
       <SidebarContent className="bg-black/90">
         <SidebarGroup>
           <SidebarGroupLabel className="text-gray-50">Dummy Lanches</SidebarGroupLabel>
             <SidebarGroupContent className="flex flex-col gap-5">   
             <SidebarHeader>
                 <div className='flex items-center flex-col sm:flex-row gap-4 justify-center'>
-                <Avatar width={50} height={50} alt='' />
+                <Avatar src={user?.profileImage} width={50} height={50} alt='' />
                 <div>
-                <p className='text-start text-md'>Bem vindo(a), Admin!</p>
+                <p className='text-start text-md'>Bem vindo(a), {user?.name}!</p>
                 </div>
             </div>
             </SidebarHeader>

@@ -1,11 +1,13 @@
-// components/OrderStatusPie.tsx
 'use client'
 
 import { useMemo } from 'react'
-import Chart from 'react-apexcharts'
+import dynamic from 'next/dynamic' // 🔥 Importa dinamicamente para evitar SSR
 import { ApexOptions } from 'apexcharts'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Order } from '@/services/orderService';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Order } from '@/services/orderService'
+
+// Importa o gráfico dinamicamente, desativando o SSR
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
 interface OrderStatusPieProps {
   orders: Order[];
@@ -48,7 +50,6 @@ export default function OrderStatusPie({ orders }: OrderStatusPieProps) {
       }
     }
   }
-
 
   return (
     <Card>

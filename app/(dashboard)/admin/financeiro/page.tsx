@@ -19,7 +19,12 @@ const KPICard = ({ title, value, description, trend }: KPICardProps) => (
       <CardTitle className="text-base font-semibold">{title}</CardTitle>
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold">{typeof value === 'number' ? `R$${value.toLocaleString()}` : value}</div>
+      <div className="text-2xl font-bold">
+        {typeof value === 'number' ? 
+          // Verifica se o valor é um número e se é monetário
+          title === 'Pedidos Hoje' ? value : `R$${value.toLocaleString()}` 
+          : value}
+      </div>
       <p className="text-xs text-muted-foreground mt-1">
         {description}
         {trend && (
@@ -35,11 +40,15 @@ const KPICard = ({ title, value, description, trend }: KPICardProps) => (
 export default async function Dashboard() {
   const orders: Order[] = await getOrders();
 
+  // Filtra os pedidos do dia e ignora os cancelados
   const todayOrders = orders.filter(order => 
-    isToday(parseISO(order.createdAt)))
+    isToday(parseISO(order.createdAt)) && order.status !== 'Cancelado'
+  );
   
+  // Calcula o ticket médio, ignorando pedidos cancelados
   const averageTicket = orders.length > 0 
-    ? orders.reduce((acc, order) => acc + order.totalValue, 0) / orders.length
+    ? orders.filter(order => order.status !== 'Cancelado') // Exclui pedidos cancelados
+        .reduce((acc, order) => acc + order.totalValue, 0) / orders.length
     : 0;
 
   return (
@@ -47,7 +56,8 @@ export default async function Dashboard() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard 
           title="Total Vendido"
-          value={orders.reduce((acc, order) => acc + order.totalValue + 10, 0)}
+          value={orders.filter(order => order.status !== 'Cancelado') // Exclui pedidos cancelados
+            .reduce((acc, order) => acc + order.totalValue + 10, 0)}
           description="Incluindo taxas de entrega"
         />
         <KPICard

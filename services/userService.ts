@@ -8,6 +8,7 @@ export interface User {
   address: string;
   telephone: string;
   profileImage: string;
+  role: string;
 }
 
 export const addUser = async ({ userId, name, email, address, telephone, profileImage }: User): Promise<void> => {
@@ -27,6 +28,7 @@ export const addUser = async ({ userId, name, email, address, telephone, profile
       telephone,
       profileImage,
       created_at: new Date().toISOString(),
+      role: 'Usuário'
     });
 
     console.log('Usuário cadastrado com sucesso!');
@@ -67,7 +69,7 @@ export const getUser = async (email: string): Promise<User | null> => {
   }
 };
 
-export const updateUser = async ({ userId, name, email, address, telephone, profileImage }: User): Promise<void> => {
+export const updateUser = async ({ userId, name, email, address, telephone, profileImage, role }: User): Promise<void> => {
   const userRef = ref(database, `users/${userId}`);
 
   try {
@@ -83,6 +85,7 @@ export const updateUser = async ({ userId, name, email, address, telephone, prof
       ...(address && { address }),
       ...(telephone && { telephone }),
       ...(profileImage && { profileImage }),
+      ...(role && { role }),
       updated_at: new Date().toISOString(),
     });
 
@@ -90,5 +93,33 @@ export const updateUser = async ({ userId, name, email, address, telephone, prof
   } catch (error) {
     console.error('Erro na atualização:', error);
     throw new Error(`Falha ao atualizar usuário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+  }
+};
+
+export const getAllUsers = async (): Promise<User[] | null> => {
+  const usersRef = ref(database, 'users'); // Referência para o nó 'users'
+
+  try {
+    const snapshot = await get(usersRef); // Busca os dados do nó 'users'
+
+    if (!snapshot.exists()) {
+      console.log('Nenhum usuário encontrado!');
+      return null;
+    }
+
+    // Converte o snapshot em uma lista de usuários
+    const users: User[] = [];
+    snapshot.forEach((childSnapshot) => {
+      const userData = childSnapshot.val(); // Dados do usuário
+      users.push({
+        userId: childSnapshot.key, // ID do usuário (chave do nó)
+        ...userData, // Demais campos do usuário
+      });
+    });
+
+    return users;
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error);
+    throw new Error(`Falha ao buscar usuários: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
   }
 };

@@ -1,4 +1,4 @@
-import { ref, set, get, getDatabase, query, orderByChild, startAt, endAt} from 'firebase/database';
+import { ref, set, get, getDatabase, query, orderByChild, startAt, endAt, remove} from 'firebase/database';
 import { database } from './firebase';
 
 
@@ -67,4 +67,27 @@ export const getProductsBySearch = async (searchTerm: string) => {
     }
 };
 
+export const updateProduct = async (productId: string, name: string, description: string, price: number, imageUrl: string): Promise<void> => {
+  try {
+    await set(ref(database, `products/${productId}`), {
+      name: name,
+      description: description,
+      price: price,
+      imageUrl: imageUrl,
+    });
+    console.log("Produto atualizado com sucesso!");
+  } catch (error) {
+    console.error("Erro ao atualizar o produto:", error);
+  }
+};
+
+export const deleteProduct = async (productId: string) => {
+  try {
+    const productRef = ref(database, `products/${productId}`);
+    await remove(productRef);  // Remove o produto com o ID fornecido
+  } catch (error) {
+    console.error("Erro ao excluir o produto:", error);
+    throw new Error("Não foi possível excluir o produto.");
+  }
+};
 

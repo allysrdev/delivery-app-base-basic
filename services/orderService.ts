@@ -1,4 +1,4 @@
-import { ref, set, get, getDatabase, push } from 'firebase/database';
+import { ref, set, get, getDatabase, push, onValue, off, DataSnapshot } from 'firebase/database';
 import { database } from './firebase';
 
 // Interface para um item do pedido
@@ -101,4 +101,54 @@ export const getOrdersByUser = async (email: string): Promise<Order[]> => {
         console.error('Erro ao buscar pedidos do usuário:', error);
         return [];
     }
+}
+  
+export const updateOrderStatus = async (orderId: string, newStatus: Order['status']): Promise<void> => {
+  try {
+    const db = getDatabase();
+    const ordersRef = ref(db, 'orders');
+
+    const snapshot = await get(ordersRef);
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+
+      // Encontra o pedido pelo orderId
+      const orderKey = Object.keys(data).find((key) => data[key].orderId === orderId);
+
+      if (orderKey) {
+        const orderRef = ref(db, `orders/${orderKey}`);
+        const order = data[orderKey];
+        order.status = newStatus;
+        await set(orderRef, order); // Atualiza o pedido no banco de dados
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar status do pedido:', error);
   }
+};
+
+export const listenToOrdersByUser = (userEmail: string, callback: (orders: Order[]) => void) => {
+  const db = getDatabase();
+  const ordersRef = ref(db, 'orders');
+
+  // Função que será chamada quando houver mudanças
+  const handleDataChange = (snapshot: DataSnapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      const orders = Object.keys(data)
+        .map((key) => data[key])
+        .filter((order) => order.email === userEmail); // Filtra pedidos pelo email do usuário
+      callback(orders);
+    } else {
+      callback([]);
+    }
+  };
+
+  // Começa a escutar mudanças
+  onValue(ordersRef, handleDataChange);
+
+  // Retorna uma função para parar de escutar mudanças
+  return () => {
+    off(ordersRef, 'value', handleDataChange);
+  };
+};
