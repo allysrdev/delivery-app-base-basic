@@ -77,6 +77,7 @@ export default function UserProfile() {
       telephone: values.telephone,
       name: values.name,
       profileImage: user?.profileImage || '/default-avatar.png',
+      role: user?.role || ''
     })
     setUser({
       userId: user?.userId || '',
@@ -85,6 +86,8 @@ export default function UserProfile() {
       telephone: values.telephone,
       name: values.name,
       profileImage: user?.profileImage || '/default-avatar.png',
+      role: user?.role || ''
+
     })
     // set a timeout for setLoading(false)
     setTimeout(() => {
