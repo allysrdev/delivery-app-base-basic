@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation";
+import { Skeleton } from "./ui/skeleton";
 
 
 const formSchema = z.object({
@@ -34,10 +35,9 @@ const formSchema = z.object({
 
 export default function UserProfile() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
     useEffect(() => {
-    setLoading(true);
     async function fetchUser() {
       const session = await getSession();
       if (session?.user?.email) {
@@ -97,7 +97,13 @@ export default function UserProfile() {
     <Box tailHeight="max-h-1/2" tailWidth="min-w-60">
       <div className="flex flex-col items-center gap-2 overflow-hidden ">
               {loading ? (
-                  <Loader />
+                  <div className="flex items-center space-x-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-[250px]" />
+                      <Skeleton className="h-4 w-[200px]" />
+                    </div>
+                  </div>
               ): (
             <div className="flex flex-col gap-4 overflow-hidden">
             <div className="flex">
@@ -112,7 +118,7 @@ export default function UserProfile() {
               <div className="flex flex-col gap-4">
                 <AlertDialog>
                   <AlertDialogTrigger
-                  className="bg-black/30 backdrop-blur-md border border-white/40 h-9 hover:bg-black/30 shadow-lg rounded-md cursor-pointer"
+                  className="bg-black/30 backdrop-blur-md border border-white/40 h-9 hover:bg-black/30 shadow-lg rounded-md cursor-pointer text-sm font-semibold"
                 
                 >
                   Editar Perfil
@@ -186,7 +192,13 @@ export default function UserProfile() {
                       <AlertDialogAction onClick={() => router.refresh()} className="bg-black/30 backdrop-blur-md border border-white/60 shadow-lg rounded-md cursor-pointer">Finalizar</AlertDialogAction>
                       </AlertDialogFooter>
                 </AlertDialogContent>
-              </AlertDialog>
+                </AlertDialog>
+                  <Button
+              className="bg-black/30 backdrop-blur-md border border-blue-500/40 hover:border-blue-500 hover:bg-black/30 shadow-lg rounded-md cursor-pointer"
+              onClick={() => signOut()}
+              >
+              Admin Center
+                </Button>
                 <Button
               className="bg-black/30 backdrop-blur-md border border-red-500/40 hover:border-red-500 hover:bg-black/30 shadow-lg rounded-md cursor-pointer"
               onClick={() => signOut()}

@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from 'react'
 import ProductCard, { Product } from './ProductCard'
 import { getProducts } from '@/services/productService';
-import { Loader } from 'lucide-react';
 import { useCart } from '@/app/context/CartContext';
+import { Skeleton } from './ui/skeleton';
+import Box from './ui/box';
 
 function Section() {
   const [productsByCategory, setProductsByCategory] = useState<Record<string, Product[]>>({});
@@ -35,7 +36,33 @@ function Section() {
   return (
     <div className="flex flex-col gap-4">
       {loading ? (
-        <div className='w-full h-full flex items-center justify-center'><Loader className='m-auto'/></div>
+          <div className="mt-8 flex flex-col gap-4">
+            <h1 className="font-bold text-xl">Carregando</h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <Box>
+              <div className="flex flex-col space-y-3">
+              <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-3 w-[200px]" />
+                <Skeleton className="h-3 w-[200px]" />
+                <Skeleton className="h-4 w-[40px]" />
+                </div>
+              </div>
+            </Box>
+            <Box>
+              <div className="flex flex-col space-y-3">
+              <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-3 w-[200px]" />
+                <Skeleton className="h-3 w-[200px]" />
+                <Skeleton className="h-4 w-[40px]" />
+                </div>
+              </div>
+            </Box>
+            </div>
+          </div>
       ) : (
         Object.keys(productsByCategory).map((category) => (
           <div key={category} className="mt-8 flex flex-col gap-4">

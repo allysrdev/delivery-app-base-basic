@@ -17,6 +17,8 @@ import { loadStripe } from "@stripe/stripe-js"
 import CheckoutElement from "@/components/CheckoutElement";
 import Box from "@/components/ui/box";
 import { LucideAtSign, LucideMapPinHouse, LucidePhoneCall, LucideUser } from "lucide-react";
+import { getOrdersByUser } from "@/services/orderService";
+import { redirect } from "next/navigation";
 
 
 
@@ -31,7 +33,7 @@ const CheckoutPage = () => {
   const { cart } = useCart();
   const [user, setUser] = useState<User | null>(null);
   const session = useSession();
-
+  
 
   useEffect(() => { 
     const fetchUser = async () => {
@@ -43,7 +45,20 @@ const CheckoutPage = () => {
       }
     };
     fetchUser();
-   })
+  }, [session])
+  
+  useEffect(() => {
+    const order = async () => {
+      const userOrders = await getOrdersByUser(user?.email || '');
+      const hasPendingOrder = userOrders?.some(order => order.status === "Pedido solicitado")
+      if (hasPendingOrder) {
+        redirect('/pedidos')
+      }
+      
+    }
+    order();
+  }, [user?.email])
+  
 
 
   const formatCurrency = (value: number) => {

@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import CloudinaryUploadWidget from "@/components/CloudinaryUploadWidget";
 import { Cloudinary } from '@cloudinary/url-gen';
 import { AdvancedImage, responsive, placeholder } from '@cloudinary/react';
+import { Input } from "@/components/ui/input";
 const AddProduct = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -61,10 +62,13 @@ const AddProduct = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 max-w-md mx-auto border rounded-lg shadow-lg">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 max-w-md mx-auto rounded-lg shadow-lg pb-16">
       <h2 className="text-lg font-bold">Adicionar Produto</h2>
-      
-      <input 
+        <label htmlFor="productName">
+          Nome do Produto
+      </label>
+        <Input 
+          name="productName"
         type="text" 
         placeholder="Nome do produto" 
         value={name} 
@@ -73,7 +77,11 @@ const AddProduct = () => {
         required
       />
 
-      <textarea 
+        <label htmlFor="description">
+          Descrição
+      </label>
+        <textarea 
+          name="description"
         placeholder="Descrição do produto" 
         value={description} 
         onChange={(e) => setDescription(e.target.value)} 
@@ -81,7 +89,11 @@ const AddProduct = () => {
         required
       />
 
-      <input 
+        <label htmlFor="value">
+          Preço
+      </label>
+        <Input 
+        name="value"
         type="number" 
         placeholder="Preço (R$)" 
         value={price} 
@@ -101,7 +113,11 @@ const AddProduct = () => {
             plugins={[responsive(), placeholder()]}
           />
         </div>
-      )}
+        )}
+        
+        <label>
+          Imagem do Produto
+      </label>
 
       <CloudinaryUploadWidget
         uwConfig={{
@@ -115,14 +131,14 @@ const AddProduct = () => {
 
       <button 
         type="submit" 
-        className="p-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+        className="p-2 bg-black border border-white text-white rounded disabled:bg-gray-400"
         disabled={uploading}
       >
         {uploading ? "Enviando..." : "Adicionar Produto"}
       </button>
 
 
-    </form>
+      </form>
   );
 };
 
