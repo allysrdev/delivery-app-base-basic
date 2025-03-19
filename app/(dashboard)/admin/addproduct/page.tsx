@@ -25,10 +25,12 @@ const AddProduct = () => {
   const [uploading, setUploading] = useState(false);
   const [products, setProducts] = useState<Product[]>();
   const [publicId, setPublicId] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Estado para o produto selecionado
-  const [isAlertOpen, setIsAlertOpen] = useState(false); // Controle do Alert de exclusão
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
-  const router = useRouter()
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+  const router = useRouter();
 
   const cld = new Cloudinary({
     cloud: {
@@ -44,13 +46,15 @@ const AddProduct = () => {
     fetchProducts();
   }, []);
 
+  const totalPages = products ? Math.ceil(products.length / itemsPerPage) : 0;
+
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
     setName(product.name);
     setDescription(product.description || '');
     setPrice(product.price);
     setPublicId(product.imageUrl);
-    setCategory(product.category || 'Outros')
+    setCategory(product.category || 'Outros');
     router.refresh();
   };
 
@@ -83,19 +87,14 @@ const AddProduct = () => {
     }
 
     setUploading(true);
-    const productId = selectedProduct ? selectedProduct.id : uuidv4(); // Usar o ID existente para editar ou novo para adicionar
+    const productId = selectedProduct ? selectedProduct.id : uuidv4();
     try {
       const imageUrl = publicId ? cld.image(publicId).toURL() : "";
-      console.log("URL DA IMAGEM " + imageUrl);
-      
 
-      // Atualiza ou adiciona o produto
       if (selectedProduct) {
-        // Atualizar o produto existente
         await updateProduct(productId, name, description, price, imageUrl);
         alert("✅ Produto atualizado com sucesso!");
       } else {
-        // Adicionar um novo produto
         await set(dbRef(database, `products/${productId}`), {
           name: name,
           description: description,
@@ -106,7 +105,6 @@ const AddProduct = () => {
         alert("✅ Produto adicionado com sucesso!");
       }
 
-      // Resetando o formulário
       setName("");
       setDescription("");
       setPrice(0);
@@ -135,7 +133,7 @@ const AddProduct = () => {
             required 
           />
           <label htmlFor="productName">Categoria</label>
-           <Input 
+          <Input 
             name="category" 
             type="text" 
             placeholder="Categoria" 
@@ -205,33 +203,57 @@ const AddProduct = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products?.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>
-                  <Image width={50} height={50} alt="imagem do produto" src={product.imageUrl} />
-                </TableCell>
-                <TableCell className="max-w-32 whitespace-normal break-words">{product.name}</TableCell>
-                <TableCell className="max-w-32 whitespace-normal break-words">{product.description}</TableCell>
-                <TableCell className="text-right">
-                  {product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </TableCell>
-                <TableCell>
-                  <Button variant="outline" className="bg-black" onClick={() => handleEdit(product)}>
-                    <LucidePencil />
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  <Button variant="outline" className="bg-black" onClick={() => handleDelete(product.id)}>
-                    <LucideTrash size={25} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {products
+              ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+              .map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <Image width={50} height={50} alt="imagem do produto" src={product.imageUrl} />
+                  </TableCell>
+                  <TableCell className="max-w-32 whitespace-normal break-words">{product.name}</TableCell>
+                  <TableCell className="max-w-32 whitespace-normal break-words">{product.description}</TableCell>
+                  <TableCell className="text-right">
+                    {product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="outline" className="bg-black" onClick={() => handleEdit(product)}>
+                      <LucidePencil />
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="outline" className="bg-black" onClick={() => handleDelete(product.id)}>
+                      <LucideTrash size={25} />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
+
+        {/* Controles de Paginação */}
+        <div className="flex justify-end gap-4 mt-4">
+          <Button
+            variant="outline"
+            className="bg-black text-white"
+            onClick={() => setCurrentPage(current => Math.max(current - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Anterior
+          </Button>
+          <span className="flex items-center px-4">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            className="bg-black text-white"
+            onClick={() => setCurrentPage(current => Math.min(current + 1, totalPages))}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            Próximo
+          </Button>
+        </div>
       </div>
 
-      {/* Confirmar Exclusão */}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent className="bg-black">
           <AlertDialogHeader>

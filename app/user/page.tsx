@@ -5,7 +5,8 @@ import ClientAuthCheck from "@/services/ClientAuthCheck";
 
 export default async function Page() {
   const session = await auth();
-  console.log(session?.user)
+
+  
 
   return (
     <div className="w-full h-[100vh] p-4 flex flex-col items-center justify-center overflow-hidden">

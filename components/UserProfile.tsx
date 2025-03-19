@@ -1,4 +1,4 @@
-"use client"; // 🔥 Agora o componente roda no Client Side
+"use client";
 
 import { getSession, signOut } from "next-auth/react";
 import React, { useEffect, useState } from "react";
@@ -51,8 +51,12 @@ export default function UserProfile() {
         setLoading(false);
       }
       
-    fetchUser();
+      fetchUser();
     }, []);
+  
+
+  
+
   
    const form = useForm<z.infer<typeof formSchema>>({
        resolver: zodResolver(formSchema),
@@ -249,6 +253,7 @@ export default function UserProfile() {
                           
         )}
 
+      
         
       </div>
     </Box>
