@@ -67,8 +67,6 @@ export default function UserProfile() {
      })
   
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     setLoading(true);
     updateUser({
       userId: user?.userId || '',
@@ -76,7 +74,7 @@ export default function UserProfile() {
       email: user?.email || '',
       telephone: values.telephone,
       name: values.name,
-      profileImage: user?.profileImage || '/default-avatar.png',
+      profileImage: values.profileImage || '/default-avatar.png',
       role: user?.role || ''
     })
     setUser({
@@ -85,7 +83,7 @@ export default function UserProfile() {
       email: user?.email || '',
       telephone: values.telephone,
       name: values.name,
-      profileImage: user?.profileImage || '/default-avatar.png',
+      profileImage: values.profileImage || '/default-avatar.png',
       role: user?.role || ''
 
     })
@@ -133,13 +131,41 @@ export default function UserProfile() {
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Editar Perfil</AlertDialogTitle>
+                      <AlertDialogTitle>Editar Perfil</AlertDialogTitle>
+                      
                     <AlertDialogDescription>
                       Edite as informações do seu perfil.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <FormField
+                          control={form.control}
+                          name="profileImage"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Foto de Perfil</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  className='text-xs bg-zinc-300 text-black'
+                                  onChange={e => {
+                                    const file = e.target.files?.[0]
+                                    if (file) {
+                                      const reader = new FileReader()
+                                      reader.onload = (event) => {
+                                        field.onChange(event.target?.result)
+                                      }
+                                      reader.readAsDataURL(file)
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       <FormField
                         control={form.control}
                         name="name"

@@ -11,6 +11,7 @@ import { CartProvider } from './context/CartContext';
 import ClientAuthCheck from '@/services/ClientAuthCheck';
 import { headers } from 'next/headers';
 import { StoreProvider } from './context/StoreContext';
+import { getUser } from '@/services/userService';
 
 export const metadata: Metadata = {
   title: 'Dummy Lanches',
@@ -26,7 +27,8 @@ export default async function RootLayout({
   const headersList = headers();
   const pathname = (await headersList).get('x-url-pathname') || '';
   const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin');
-
+  const user = await getUser(session?.user?.email || '')
+  const userProfilePhoto = user?.profileImage
   return (
     <html lang="en">
       <script src="https://upload-widget.cloudinary.com/global/all.js" async defer />
@@ -50,9 +52,9 @@ export default async function RootLayout({
                 <LucideReceiptText />
               </Link>
               <Link href="/user" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
-                {session?.user?.image ? (
+                {userProfilePhoto ? (
                   <Image
-                    src={session.user.image}
+                    src={userProfilePhoto}
                     width={35}
                     height={35}
                     alt="user-image"
