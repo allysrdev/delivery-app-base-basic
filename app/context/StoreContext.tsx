@@ -27,26 +27,52 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     address: 'Rua do Borcelle, 123, FastFood',
     phone: '(11) 9 8888 7777',
     image: '/logo.png',
-    workingHours: 'Segunda a Sexta: 10:00 - 22:00',
+    workingHours: 'Terça a Domingo: 18:00 - 23:00',
     description: 'O melhor fast food da cidade!',
-    isDeliveryActive: true,
+    isDeliveryActive: false, 
     banner: '/banner.png',
   });
 
-  // Carregue as configurações do Firebase ao iniciar
+  const isStoreOpen = (): boolean => {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    const isDayValid = dayOfWeek >= 2 || dayOfWeek === 0; // Terça (2) a Domingo (0)
+    const isTimeValid =
+      (currentHour > 18 || (currentHour === 18 && currentMinute >= 0)) &&
+      (currentHour < 23 || (currentHour === 23 && currentMinute === 0));
+
+    return isDayValid && isTimeValid;
+  };
+
   useEffect(() => {
     const fetchStoreConfig = async () => {
       const configRef = ref(database, 'storeConfig');
       const snapshot = await get(configRef);
       if (snapshot.exists()) {
-        setStoreConfig(snapshot.val());
+        const config = snapshot.val();
+        setStoreConfig({
+          ...config,
+          isDeliveryActive: isStoreOpen(),
+        });
       }
     };
 
     fetchStoreConfig();
+
+    // Atualiza o status do delivery a cada minuto
+    const interval = setInterval(() => {
+      setStoreConfig((prevConfig) => ({
+        ...prevConfig,
+        isDeliveryActive: isStoreOpen(),
+      }));
+    }, 60000); // Verifica a cada minuto
+
+    return () => clearInterval(interval); // Limpa o intervalo ao desmontar o componente
   }, []);
 
-  // Atualize o Firebase quando o estado mudar
   const updateStoreConfig = async (config: Partial<StoreConfig>) => {
     const newConfig = { ...storeConfig, ...config };
     setStoreConfig(newConfig);

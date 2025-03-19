@@ -1,16 +1,35 @@
-import React from 'react'
-import Box from './ui/box'
-import Image from 'next/image'
-import { Button } from './ui/button'
-import { Loader } from 'lucide-react'
+import React from 'react';
+import Box from './ui/box';
+import Image from 'next/image';
+import { Button } from './ui/button';
+import { Loader, AlertCircle, LucideClock, LucideCheckCircle, LucideXCircle, LucideAlertCircle } from 'lucide-react';
+
+// Definindo as cores e animações para cada status
+const statusConfig = {
+    Pendente: { color: 'bg-amber-400', icon: <LucideClock className="w-4 h-4" /> },
+    Preparo: { color: 'bg-blue-400', icon: <Loader className="w-4 h-4 animate-spin" /> },
+    Entregue: { color: 'bg-green-400', icon: <LucideCheckCircle className="w-4 h-4" /> },
+    Cancelado: { color: 'bg-red-400', icon: <LucideXCircle className="w-4 h-4" /> },
+    Entrega: { color: 'bg-purple-400', icon: <LucideAlertCircle className="w-4 h-4" /> },
+};
+
+// Estilos CSS para a animação de piscar
+const styles = `
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+    .blinking-dot {
+        animation: blink 1s infinite;
+    }
+`;
 
 export default function OrderComponent({
-    orderId ,
-      createdAt, 
-      items,
-      totalValue,
-      status,
-  
+    orderId,
+    createdAt,
+    items,
+    totalValue,
+    status,
 }: {
     orderId: string,
     createdAt: string,
@@ -21,53 +40,62 @@ export default function OrderComponent({
         price: number
     }>,
     totalValue: number,
-    status: string,
-  
-    
+    status: keyof typeof statusConfig, // Garantimos que o status seja uma chave válida
 }) {
-  return (
-      <Box>
-          <div className='w-full h-full flex flex-col gap-8'>
-          <h1 className='font-semibold flex gap-2 text-sm'>
-              <Image
-                  src={'/order.png'}
-                  width={25}
-                  height={25}
-                  alt='order-icon'
-              />
-              Pedido nº {orderId} - {createdAt}
-          </h1>
-              {items && items.length > 0 ? (
-                items.map((item) => (
-                    <div key={item.id} className="flex flex-col items-start gap-2">
-                    <h1 className="font-semibold">{item.name}</h1>
-                    <p className="font-semibold">Qnt.: {item.quantity}</p>
-                    <p className="font-semibold">R${item.price}</p>
-                    </div>
-                ))
+    const { color, icon } = statusConfig[status] || { color: 'bg-gray-400', icon: <AlertCircle className="w-4 h-4" /> };
+
+    return (
+        <Box>
+            {/* Adicionando os estilos CSS */}
+            <style>{styles}</style>
+
+            <div className='w-full h-full flex flex-col gap-8'>
+                <h1 className='font-semibold flex gap-2 text-sm'>
+                    <Image
+                        src={'/order.png'}
+                        width={25}
+                        height={25}
+                        alt='order-icon'
+                    />
+                    Pedido nº {orderId} - {createdAt}
+                </h1>
+                {items && items.length > 0 ? (
+                    items.map((item) => (
+                        <div key={item.id} className="flex flex-col items-start gap-2">
+                            <h1 className="font-semibold">{item.name}</h1>
+                            <p className="font-semibold">Qnt.: {item.quantity}</p>
+                            <p className="font-semibold">R${item.price}</p>
+                        </div>
+                    ))
                 ) : (
-                <div  className="flex flex-col center justify-center">
-                          <Loader />
-                </div>
+                    <div className="flex flex-col center justify-center">
+                        <Loader />
+                    </div>
                 )}
-              <h1 className='font-semibold flex gap-2 text-sm'>
-              <Image
-                  src={'/money.png'}
-                  width={25}
-                  height={25}
-                  alt='order-icon'
-              />
-              Valor Total: {totalValue}
-          </h1>
-          <div className='flex gap-2 items-center justify-center pl-2'>
-            <div className='bg-amber-400 w-1 h-1 rounded-full' />
-            <p className='text-sm'>
-                {status}
-              </p>
-              </div>
-              <Button>Cancelar</Button>
-        </div>
-  
-    </Box>
-  )
+                <h1 className='font-semibold flex gap-2 text-sm'>
+                    <Image
+                        src={'/money.png'}
+                        width={25}
+                        height={25}
+                        alt='order-icon'
+                    />
+                    Valor Total: R${totalValue}
+                </h1>
+                <div className='flex gap-2 items-center justify-center pl-2'>
+                    {/* Pontinho que pisca */}
+                    <div className={`${color} w-2 h-2 rounded-full blinking-dot`} />
+                    <p className='text-sm flex items-center gap-2'>
+                        {icon} {status}
+                    </p>
+                </div>
+                {
+                    status === 'Cancelado' ? (
+                        <Button>Entre em contato</Button>
+                    ) : (
+                    <Button disabled>Cancelar</Button>
+                    )
+                }
+            </div>
+        </Box>
+    );
 }

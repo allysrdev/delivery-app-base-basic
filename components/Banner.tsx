@@ -10,7 +10,7 @@ function Banner() {
           src={storeConfig.banner}
           alt="Home Banner"
           fill
-          className="object-cover rounded-2xl"
+          className="object-fit rounded-2xl"
         />
       </div>
   )

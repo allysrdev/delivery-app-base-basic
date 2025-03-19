@@ -23,7 +23,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Carrega do localStorage apenas após montagem no cliente
   useEffect(() => {
     setIsMounted(true);
     const storedCart = localStorage.getItem('cart');
@@ -32,7 +31,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Persiste no localStorage
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('cart', JSON.stringify(cart));
