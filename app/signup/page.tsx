@@ -130,7 +130,7 @@ async function onSubmit(values: FormValues) {
         password: values.password,
         redirect: false
       })
-      router.push('/')
+      router.push('/login')
     }
 
   } catch (err) {
