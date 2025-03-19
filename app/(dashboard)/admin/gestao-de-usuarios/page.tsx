@@ -84,13 +84,13 @@ export default function GestaoUsuariosPage() {
           placeholder="Pesquisar por e-mail"
           value={searchEmail}
           onChange={(e) => setSearchEmail(e.target.value)}
-          className="bg-gray-900 text-white border-gray-700 max-w-64"
+          className="bg-black text-white border-gray-700 max-w-64"
         />
       </div>
 
       {/* Tabela de usuários */}
       <div className="overflow-x-hidden">
-        <Table className="bg-gray-900 rounded-lg w-full">
+        <Table className="bg-black rounded-lg w-full">
           <TableHeader>
             <TableRow>
               <TableHead className="text-white">Nome</TableHead>
