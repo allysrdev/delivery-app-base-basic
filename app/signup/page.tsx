@@ -154,7 +154,12 @@ function Page() {
       e.preventDefault()
       if (step < 2) handleNext()
     }
-  }
+    }
+
+ 
+    
+
+    
 
   return (
     <div className='w-full h-[100vh] flex flex-col items-center overflow-hidden'>
