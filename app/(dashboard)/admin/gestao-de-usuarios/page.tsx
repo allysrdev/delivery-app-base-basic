@@ -14,12 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner"; // Para exibir notificações
+import { Loader } from "lucide-react";
 
 export default function GestaoUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchEmail, setSearchEmail] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true)
 
   // Busca usuários ao carregar a página ou ao pesquisar
   useEffect(() => {
@@ -31,9 +33,11 @@ export default function GestaoUsuariosPage() {
         } else {
           setUsers([]);
         }
+        setLoading(false);
       } else {
         const allUsers = await getAllUsers();
         setUsers(allUsers || []);
+        setLoading(false);
       }
     };
 
@@ -85,13 +89,21 @@ export default function GestaoUsuariosPage() {
           value={searchEmail}
           onChange={(e) => setSearchEmail(e.target.value)}
           className="bg-black text-white border-gray-700 max-w-64"
+          
         />
       </div>
 
       {/* Tabela de usuários */}
-      <div className="overflow-x-hidden">
-        <Table className="bg-black rounded-lg w-full">
-          <TableHeader>
+      <div className="overflow-x-hidden w-full">
+        {
+          loading ? (
+            <div className="flex items-center gap-2 justify-center h-full overflow-hidden">
+              <p>Aguarde</p>
+              <span className="animate-spin text-6xl text-gray-300"><Loader /></span>
+            </div>
+          ) : (
+              <Table className="bg-black rounded-lg w-full min-w-full">
+          <TableHeader className="min-w-full">
             <TableRow>
               <TableHead className="text-white">Nome</TableHead>
               <TableHead className="text-white">E-mail</TableHead>
@@ -131,6 +143,8 @@ export default function GestaoUsuariosPage() {
             )}
           </TableBody>
         </Table>
+          )
+        }
       </div>
 
       {/* Modal de edição */}
