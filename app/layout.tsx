@@ -14,7 +14,7 @@ import { StoreProvider } from './context/StoreContext';
 import { getUser } from '@/services/userService';
 
 export const metadata: Metadata = {
-  title: 'Dummy Lanches',
+  title: 'Borchelle Fast Food',
   description: 'Loja de lanches fictícia',
 };
 
