@@ -9,9 +9,10 @@ export interface User {
   telephone: string;
   profileImage: string;
   role: string;
+  password?: string;
 }
 
-export const addUser = async ({ userId, name, email, address, telephone, profileImage }: User): Promise<void> => {
+export const addUser = async ({ userId, name, email, address, telephone, profileImage , password}: User): Promise<void> => {
   const userRef = ref(database, `users/${userId}`);
 
   try {
@@ -28,7 +29,8 @@ export const addUser = async ({ userId, name, email, address, telephone, profile
       telephone,
       profileImage,
       created_at: new Date().toISOString(),
-      role: 'Usuário'
+      role: 'Usuário',
+      password
     });
 
     console.log('Usuário cadastrado com sucesso!');

@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Skeleton } from "./ui/skeleton";
 
 
@@ -201,12 +201,16 @@ export default function UserProfile() {
                       </AlertDialogFooter>
                 </AlertDialogContent>
                 </AlertDialog>
-                  <Button
-              className="bg-black/30 backdrop-blur-md border border-blue-500/40 hover:border-blue-500 hover:bg-black/30 shadow-lg rounded-md cursor-pointer"
-              onClick={() => signOut()}
-              >
-              Admin Center
-                </Button>
+                {
+                  user?.role === "Administrador" && (
+                    <Button
+                    className="bg-black/30 backdrop-blur-md border border-blue-500/40 hover:border-blue-500 hover:bg-black/30 shadow-lg rounded-md cursor-pointer"
+                    onClick={() => redirect('/admin')}
+                    >
+                    Admin Center
+                      </Button>
+                  )
+                }  
                 <Button
               className="bg-black/30 backdrop-blur-md border border-red-500/40 hover:border-red-500 hover:bg-black/30 shadow-lg rounded-md cursor-pointer"
               onClick={() => signOut()}

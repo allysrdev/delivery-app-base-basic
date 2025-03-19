@@ -15,87 +15,155 @@ import {
 import { Input } from "@/components/ui/input"
 import Link from 'next/link'
 import { LucideUser } from 'lucide-react'
-import { redirect } from 'next/navigation'
-import { FcGoogle } from "react-icons/fc";
-import { doSocialLoginWithGoogle } from '@/services/actions'
+import { FcGoogle } from "react-icons/fc"
+import { signIn } from "next-auth/react"
+import { useRouter } from 'next/navigation'
+import { Loader } from 'lucide-react'
 
 const formSchema = z.object({
-  email: z.string().email().nonempty('Insira um e-mail'),
-  password: z.string().min(8).nonempty('Insira uma senha'),
+  email: z.string().email({ message: "Insira um e-mail válido" }),
+  password: z.string().min(8, { message: "A senha deve ter no mínimo 8 caracteres" }),
 })
 
-const onSubmit = (data: unknown) => {
-  console.log(data)
-}
+export default function LoginPage() {
+  const router = useRouter()
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-function Page() {
-
-    const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        email: "",
-        password: "",
+      email: "",
+      password: "",
     },
   })
 
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const result = await signIn('credentials', {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        throw new Error('Credenciais inválidas')
+      }
+
+      router.push('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ocorreu um erro ao fazer login')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signIn('google', { callbackUrl: '/' })
+    } catch (err) {
+      setError(err as string)
+    }
+  }
 
   return (
     <div className='w-full h-[100vh] flex flex-col items-center overflow-hidden'>
-          <div className='bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-6 w-full h-[85%] flex items-center justify-center flex-col gap-8'>
-              <div className='flex items-center justify-center flex-col gap-6'>
-                  <h1 className='text-white text-3xl font-bold flex items-center gap-2'>
-                      <LucideUser className='w-[1.875rem] h-[1.875rem]' />  
-                      Login</h1>
-                
-                  <p className='text-white text-xs'>Entre com seu email e senha para acessar sua conta</p>
-              </div>
-               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 min-w-52">
-                    <FormField
-                    control={form.control}
-              name="email"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>E-mail</FormLabel>
-                        <FormControl>
-                            <Input className='text-xs' placeholder="seu@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-              )}
-               
-                      />
-                      <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Senha</FormLabel>
-                        <FormControl>
-                            <Input className='text-xs' placeholder="Insira a sua senha" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                      />
-                      <div className='w-full flex flex-col gap-4 items-start'>
-              <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="submit">Entrar</Button>
-                   <div className='flex items-center gap-2'>
-                          <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' onClick={() => redirect('/signup')} type='button'>Criar uma Conta</Button>
+      <div className='bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-6 w-full h-[85%] flex items-center justify-center flex-col gap-8'>
+        <div className='flex items-center justify-center flex-col gap-6'>
+          <h1 className='text-white text-3xl font-bold flex items-center gap-2'>
+            <LucideUser className='w-[1.875rem] h-[1.875rem]' />  
+            Login
+          </h1>
+          <p className='text-white text-xs'>Entre com seu email e senha para acessar sua conta</p>
+        </div>
 
-                <Button className='bg-white/90 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer text-black/70 hover:bg-white/80' onClick={() => doSocialLoginWithGoogle('/signup')} type='button'>
-                  <FcGoogle />
-                  Entrar com Google</Button>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 min-w-52">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail</FormLabel>
+                  <FormControl>
+                    <Input
+                      className='text-xs'
+                      placeholder="seu@email.com"
+                      {...field}
+                      disabled={loading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <Input
+                      className='text-xs'
+                      type="password"
+                      placeholder="Insira a sua senha"
+                      {...field}
+                      disabled={loading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {error && (
+              <p className="text-red-500 text-sm text-center">{error}</p>
+            )}
+
+            <div className='w-full flex flex-col gap-4 items-start'>
+              <Button 
+                className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer w-full' 
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? <Loader className="animate-spin" /> : 'Entrar'}
+              </Button>
+
+              <div className='flex items-center gap-2 w-full'>
+                <Button 
+                  className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer flex-1' 
+                  type="button"
+                  onClick={() => router.push('/signup')}
+                >
+                  Criar uma Conta
+                </Button>
+
+                <Button 
+                  className='bg-white/90 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer text-black/70 hover:bg-white/80 flex-1' 
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                >
+                  <FcGoogle className="mr-2" />
+                  Google
+                </Button>
               </div>
-                        <Link className='text-blue-500 hover:text-blue-600 underline flex items-center justify-center gap-2 text-xs' href="/">
-                            Esqueci minha senha
-                        </Link>
-                      </div>
-                </form>
-                </Form>
-          </div>
+
+              <Link 
+                className='text-blue-500 hover:text-blue-600 underline flex items-center justify-center gap-2 text-xs w-full' 
+                href="/forgot-password"
+              >
+                Esqueci minha senha
+              </Link>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   )
 }
-
-export default Page

@@ -15,364 +15,376 @@ import {
 import { Input } from "@/components/ui/input"
 import { Loader, LucideUndo, LucideUserPlus } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
-import { redirect } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-// import { Cloudinary } from '@cloudinary/url-gen/index'
+import { useRouter } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react'
 import { addUser, getUser } from '@/services/userService'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 import Avatar from '@/components/Avatar'
+import bcrypt from 'bcryptjs'
 
-const formSchema = z.object({
-        name: z.string(),
-        email: z.string(),
-        password: z.string(), // Apenas verifica se não está vazio
-        confirmPassword: z.string(),
-        street: z.string(),
-        number: z.string(),
-        reference: z.string(),
-        neighborhood: z.string(),
-        telephone: z.string().refine(val => /^\d{10,11}$/.test(val), "Telefone inválido"),
-        profileImage: z.string(),
-    }).refine(data => data.password === data.confirmPassword, {
-        message: "Senhas não coincidem",
-        path: ["confirmPassword"],
-    });
 
 
 function Page() {
-    const [step, setStep] = useState(0);
-    const [progress, setProgress] = useState(25);
-    const { data: session } = useSession();
-    const [profilePhoto, setProfilePhoto] = useState(session?.user?.image || '/default-avatar.png')
-    const [loading, setLoading] = useState(false);
-
-    
-    useEffect(() => {
-        if (session?.user) {
-            form.setValue('email', session?.user?.email || '')
-            form.setValue('name', session?.user?.name || '')
-            form.resetField('street')
-            form.trigger(["email", "password", "confirmPassword", "street"]);
-            setProfilePhoto(session?.user?.image || '')
-            setStep(1)
-            alreadyExists();
-        }
-        
-        
-    }, [session]);
-
+  const [step, setStep] = useState(0)
+  const [progress, setProgress] = useState(33)
+  const { data: session } = useSession()
+  const [profilePhoto, setProfilePhoto] = useState(session?.user?.image || '/default-avatar.png')
+  const [loading, setLoading] = useState(false)
+    const router = useRouter()
     
     
-    async function alreadyExists() {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const user = await getUser(session?.user?.email || '');
-        if (user) { 
-            redirect('/')
-        }
+const formSchema = z.object({
+    name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+    email: z.string().email("E-mail inválido"),
+    password: z.string().optional(),
+    confirmPassword: z.string().optional(),
+    street: z.string().min(3, "Rua inválida"),
+    number: z.string().min(1, "Número inválido"),
+    reference: z.string().optional(),
+    neighborhood: z.string().min(3, "Bairro inválido"),
+    telephone: z.string().refine(
+      (val) => /^\(\d{2}\)\d{5}-\d{4}$/.test(val),
+      "Formato inválido (XX)XXXXX-XXXX"
+    ),
+    profileImage: z.string().optional(),
+  }).superRefine((data, ctx) => {
+    // Validação condicional de senha apenas para login não social
+    if (!session?.user && data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Senhas não coincidem",
+        path: ["confirmPassword"],
+      });
     }
-    
+  });
 
-    const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-        defaultValues: {
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        street: "",
-        number: "",
-        reference: "",
-        neighborhood: "",
-        telephone: "",
-        profileImage: "",
-
-        }
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      street: "",
+      number: "",
+      reference: "",
+      neighborhood: "",
+      telephone: "",
+      profileImage: "",
+    }
   })
-
-    // const cld = new Cloudinary({
-    // cloud: {
-    //   cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    // },
-    // });
     
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        setLoading(true);
-        console.log(values);
+type FormValues = z.infer<typeof formSchema>
+    
 
-        const address = values.street + ", " + values.number + ", " + values.neighborhood + ", " + values.reference
-        try {
-            const userId = uuidv4().toString();
-            setStep(3);
-            setProgress(100);
-            setLoading(false);    
-            addUser({userId: userId,name: values.name, email: values.email, address,telephone: values.telephone, profileImage: session?.user?.image || '/default/avatar.png', role: "Usuário"})
-        } catch (err) {
-            setLoading(false);
-            alert(err)
-        }
+  
+  useEffect(() => {
+    if (session?.user) {
+      alreadyExists()
+      form.setValue('email', session.user.email || '')
+      form.setValue('name', session.user.name || '')
+      form.resetField('password')
+      form.resetField('confirmPassword')
+      setProfilePhoto(session.user.image || '/default-avatar.png')
+      setStep(1)
+      setProgress(66)
+    }
+  }, [session, form])
+
+  async function alreadyExists() {
+    const user = await getUser(session?.user?.email || '')
+    if (user) router.push('/')
+  }
+
+async function onSubmit(values: FormValues) {
+  setLoading(true)
+  try {
+    const isSocialLogin = !!session?.user
+
+    // Dados básicos para ambos os fluxos
+    const userData = {
+      userId: uuidv4(),
+      name: values.name || session?.user?.name || '',
+      email: values.email || session?.user?.email || '',
+      address: `${values.street}, ${values.number}, ${values.neighborhood}${values.reference ? `, ${values.reference}` : ''}`,
+      telephone: values.telephone,
+      profileImage: profilePhoto || session?.user?.image || '/default-avatar.png',
+      role: "Usuário",
+      password: isSocialLogin ? '' : await bcrypt.hash(values.password! , 10)
     }
 
+    // Validação adicional para login social
+    if (isSocialLogin) {
+      if (!session.user?.email) throw new Error('E-mail não encontrado na sessão')
+      userData.email = session.user.email
+    }
+
+    await addUser(userData)
+
+    // Autenticação automática
+    if (isSocialLogin) {
+      await signIn('google', { callbackUrl: '/' })
+    } else {
+      await signIn('credentials', {
+        email: userData.email,
+        password: values.password,
+        redirect: false
+      })
+      router.push('/')
+    }
+
+  } catch (err) {
+    setLoading(false)
+    alert(err instanceof Error ? err.message : 'Erro ao criar conta')
+  }
+}
+
+
+
+  const handleBack = () => {
+    setStep(prev => Math.max(0, prev - 1))
+    setProgress(prev => Math.max(33, prev - 33))
+  }
+
+const handleNext = async () => {
+  const socialLogin = !!session?.user
+  const fields = step === 0 
+    ? (socialLogin ? ['email'] : ['email', 'password', 'confirmPassword'])
+    : ['name', 'street', 'number', 'neighborhood', 'telephone']
+
+  const isValid = await form.trigger(fields as (keyof FormValues)[])
+  if (isValid) {
+    setStep(prev => prev + 1)
+    setProgress(prev => prev + 33)
+  }
+}
 
   return (
     <div className='w-full h-[100vh] flex flex-col items-center overflow-hidden'>
-          <div className='bg-black/30 backdrop-blur-md shadow-lg rounded-md p-6 w-full h-[85%] flex items-center justify-center flex-col gap-8'>
-              <div className='flex items-center justify-center flex-col gap-6'>
-                   <LucideUserPlus className='w-[1.875rem] h-[1.875rem]' />  
-                    <h1 className='text-white text-3xl font-bold flex items-center gap-2'>
-                    Cadastre-se
-                    </h1>
-                      
-              </div>
-            <Progress value={progress}/>
-              
-               <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 min-w-52">
-                      {step === 0 ? (
-                          <>
-                            <FormField
-                            control={form.control}
-                                  name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>E-mail</FormLabel>
-                                <FormControl>
-                                    <Input  className='text-xs' placeholder="seu@email.com" {...field}  />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                                 )}
-                            />
-                      <FormField
-                    control={form.control}
-                                  name="password"
-                                  disabled={!!session?.user}
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Senha</FormLabel>
-                        <FormControl>
-                            <Input type='password' className='text-xs' placeholder="Insira a sua senha" {...field}  value={session?.user?.email ? "379ryqx3498n8qo3xufhqiu" : ''}   />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                      />
-                      <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    disabled={!!session?.user}
-
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Confirmar senha</FormLabel>
-                        <FormControl>
-                            <Input type='password' className='text-xs' placeholder="Insira a sua senha" {...field}  value={session?.user ? "379ryqx3498n8qo3xufhqiu" : ''}   />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                      />
-                          </>
-                      ) : step === 1 ?  (
-                              <>
-                                   <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Nome Completo</FormLabel>
-                                <FormControl>
-                                        <Input type='text' className='text-xs' placeholder="Informe seu endereço completo" {...field}
-                                       />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                                 )}
-                                  />
-                             <FormField
-                            control={form.control}
-                            name="street"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Rua</FormLabel>
-                                <FormControl>
-                                    <Input
-                                    type="text"
-                                    className="text-xs"
-                                    placeholder="Informe o nome da sua rua"
-                                            value={field.value || ''}
-                                            onChange={(e) => {
-                                                form.setValue('street', e.target.value);
-                                                form.trigger('street');
-                                            }}
-                                            
-                                />
-                                    </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                                  />
-                                  <div className='flex justify-evenly gap-2'>
-                                    <FormField
-                                        control={form.control}
-                                        name="number"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                            <FormLabel>Nº</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                type="text"
-                                                className="text-xs w-1/2"
-                                                placeholder="Nº"
-                                                        value={field.value || ''}
-                                                        onChange={(e) => {
-                                                            form.setValue('number', e.target.value);
-                                                            form.trigger('number');
-                                                        }}
-                                                        
-                                            />
-                                                </FormControl>
-                                            <FormMessage />
-                                            </FormItem>
-                                        )}
-                                      />
-                                       <FormField
-                                        control={form.control}
-                                        name="neighborhood"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                            <FormLabel>Bairro</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                type="text"
-                                                className="text-xs"
-                                                placeholder="Bairro"
-                                                {...field}
-                                                        
-                                                 onChange={(e) => {
-                                                            form.setValue('neighborhood', e.target.value);
-                                                            form.trigger('neighborhood');
-                                                        }}
-                                            />
-                                                </FormControl>
-                                            <FormMessage />
-                                            </FormItem>
-                                        )}
-                                      />
-                                        <FormField
-                                        control={form.control}
-                                        name="reference"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                            <FormLabel>Complemento</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                type="text"
-                                                className="text-xs"
-                                                        placeholder="Casa, Nº Apto..."
-                                                        value={field.value || ''}
-                                                        onChange={(e) => {
-                                                            form.setValue('reference', e.target.value);
-                                                            form.trigger('reference');
-                                                        }}
-                                                        
-                                            />
-                                                </FormControl>
-                                            <FormMessage />
-                                            </FormItem>
-                                        )}
-                                        />
-                                      </div>
-                                  <FormField
-                            control={form.control}
-                            name="telephone"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Nº de telefone</FormLabel>
-                                <FormControl>
-                                    <Input className='text-xs'  placeholder="(XX) XXXXX-XXXX" {...field} />
-                                    </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                                 )}
-                            />
-                              </>
-                          ) : (
+      <div className='bg-black/30 backdrop-blur-md shadow-lg rounded-md p-6 w-full h-[85%] flex items-center justify-center flex-col gap-8'>
+        <div className='flex items-center justify-center flex-col gap-6'>
+          <LucideUserPlus className='w-[1.875rem] h-[1.875rem]' />  
+          <h1 className='text-white text-3xl font-bold'>Cadastre-se</h1>
+        </div>
         
-                                  <div className='flex flex-col items-center gap-8'>
-                                    <Avatar src={profilePhoto} alt={session?.user?.name || ''}  />
+        <Progress value={progress} />
 
-                                  <FormField
-                                    control={form.control}
-                                    name="profileImage"
-                                    render={() => (
-                                        <FormItem>
-                                            <FormLabel>Foto de Perfil</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className='text-xs bg-zinc-300 text-black'
-                                                    
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                  </div>
-                      ) 
-                      }
-                      
-                      <div className='w-full flex flex-col gap-4 items-start'>
-                          {step === 0 ? (
-                              <div className='flex items-center justify-between w-full'>
-                                  <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={(e) => {
-                                      e.preventDefault();
-                                  setStep(1)
-                                  setProgress(30)
-                                  }}>Continuar</Button>
-                                  <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={() => {
-                                  redirect('/login')
-                                  }}><LucideUndo /></Button>
-                                  
-                                </div>
-                            
-                          ) : step === 1 ? (
-                                  <div className='flex items-center justify-between w-full'>
-                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4' type="button" onClick={(e) => {
-                                          e.preventDefault();
-                                      setStep(2)
-                                      setProgress(60)
-                                      }}>Continuar</Button>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 min-w-52">
+            {step === 0 && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>E-mail</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          className='text-xs'
+                          placeholder="seu@email.com"
+                          disabled={!!session?.user}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="button" onClick={() => {
-                                          setStep(0)
-                                          setProgress(30)
-                                  }}><LucideUndo /></Button>
-                                      </div>
-                              ) : (
-                                    <div className='flex items-center justify-between w-full'>
-                                          <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="submit"
-                                              onClick={() => {
-                                                  setTimeout(() => {
-                                                      setLoading(true);
-                                                      alreadyExists()
-                                                      setLoading(false);
-                                                   }, 2000)
-                                            }}
-                                          >{loading ? <Loader /> : 'Finalizar'}</Button>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="password"
+                          className='text-xs'
+                          placeholder="Insira a sua senha"
+                          disabled={!!session?.user}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                                      <Button className='bg-black/30 backdrop-blur-md border border-zinc-300 shadow-lg rounded-md p-4 cursor-pointer' type="button" onClick={() => {
-                                          setStep(1)
-                                          setProgress(60)
-                                  }}><LucideUndo /></Button>
-                                      </div>
-                        ) }
-                        
-                      </div>
-                </form>
-                </Form>
-          </div>
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirmar senha</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="password"
+                          className='text-xs'
+                          placeholder="Confirme a senha"
+                          disabled={!!session?.user}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {step === 1 && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Completo</FormLabel>
+                      <FormControl>
+                        <Input {...field} className='text-xs' placeholder="Seu nome completo" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className='flex gap-2'>
+                  <FormField
+                    control={form.control}
+                    name="street"
+                    render={({ field }) => (
+                      <FormItem className='flex-1'>
+                        <FormLabel>Rua</FormLabel>
+                        <FormControl>
+                          <Input {...field} className='text-xs' placeholder="Nome da rua" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="number"
+                    render={({ field }) => (
+                      <FormItem className='w-20'>
+                        <FormLabel>Nº</FormLabel>
+                        <FormControl>
+                          <Input {...field} className='text-xs' placeholder="Nº" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="neighborhood"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bairro</FormLabel>
+                      <FormControl>
+                        <Input {...field} className='text-xs' placeholder="Bairro" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="telephone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefone</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className='text-xs' 
+                          placeholder="(XX)XXXXX-XXXX"
+                          onChange={e => {
+                            const value = e.target.value
+                            .replace(/\D/g, '')
+                            .replace(/(\d{2})(\d{5})(\d{4})/, '($1)$2-$3')
+                            field.onChange(value)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {step === 2 && (
+              <div className='flex flex-col items-center gap-8'>
+                <Avatar src={profilePhoto} alt={session?.user?.name || ''} />
+
+                <FormField
+                  control={form.control}
+                  name="profileImage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Foto de Perfil</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className='text-xs bg-zinc-300 text-black'
+                          onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              const reader = new FileReader()
+                              reader.onload = (event) => {
+                                setProfilePhoto(event.target?.result as string)
+                                field.onChange(event.target?.result)
+                              }
+                              reader.readAsDataURL(file)
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            <div className='w-full flex justify-between'>
+              {step > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleBack}
+                  className='bg-black/30 border border-zinc-300'
+                >
+                  <LucideUndo className="mr-2 h-4 w-4" /> Voltar
+                </Button>
+              )}
+
+              {step < 2 ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className='bg-black/30 border border-zinc-300'
+                >
+                  Continuar
+                </Button>
+              ) : (
+                <Button type="submit" disabled={loading} className='bg-black/30 border border-zinc-300'>
+                  {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                  Finalizar Cadastro
+                </Button>
+              )}
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   )
 }
