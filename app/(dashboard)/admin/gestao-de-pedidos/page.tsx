@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { getOrders, Order, updateOrderStatus } from '@/services/orderService';
 import { Printer, CheckCircle, XCircle, Truck, PackageCheck, Phone } from 'lucide-react';
 
+
 const getElapsedTime = (createdAt: string) => {
   const now = new Date();
   const createdDate = new Date(createdAt);
@@ -25,6 +26,44 @@ const getCardColor = (status: Order['status']) => {
     Cancelado: 'bg-red-50',
   };
   return colors[status];
+};
+
+const printOrder = (order: Order) => {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
+  
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Pedido #${order.orderId}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+          h1 { margin-bottom: 10px; }
+          .logo { width: 150px; margin: 0 auto 20px; }
+          .order-details { margin-bottom: 20px; text-align: left; }
+          .items { border-top: 1px solid #000; padding-top: 10px; text-align: left; }
+        </style>
+      </head>
+      <body>
+        <img src='/logo.png' alt='Empresa' class='logo' />
+        <h1>Pedido #${order.orderId}</h1>
+        <div class='order-details'>
+          <p><strong>Cliente:</strong> ${order.name}</p>
+          <p><strong>Email:</strong> ${order.email}</p>
+          <p><strong>Endereço:</strong> ${order.address}</p>
+          <p><strong>Total:</strong> R$ ${order.totalValue.toFixed(2)}</p>
+        </div>
+        <div class='items'>
+          <h2>Itens do Pedido</h2>
+          <ul>
+            ${order.items.map(item => `<li>${item.quantity}x ${item.name} - R$ ${item.price.toFixed(2)}</li>`).join('')}
+          </ul>
+        </div>
+        <script>window.print();</script>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
 };
 
 export default function OrdersPage() {
@@ -57,7 +96,7 @@ export default function OrdersPage() {
             <CardHeader>
               <CardTitle className='flex justify-between'>
                 Pedido #{order.orderId}
-                <Button className="flex items-center" onClick={() => console.log('Imprimir pedido')}>
+                <Button className="flex items-center" onClick={() => printOrder(order)}>
                   <Printer size={16} />
                 </Button>
               </CardTitle>
@@ -80,7 +119,11 @@ export default function OrdersPage() {
             <div className="p-4 flex items-center space-x-2 border-t mt-auto">
               {order.status === 'Pendente' && (
                 <>
-                  <Button onClick={() => updateStatus(order.orderId, 'Preparo')} className="bg-green-500 hover:bg-green-600 text-white">
+                  <Button onClick={() => {
+                    updateStatus(order.orderId, 'Preparo')
+                    printOrder(order)
+
+                  }} className="bg-green-500 hover:bg-green-600 text-white">
                     <CheckCircle size={16} className="mr-2" /> Aceitar
                   </Button>
                   <Button onClick={() => updateStatus(order.orderId, 'Cancelado')} className="bg-red-500 hover:bg-red-600 text-white">
@@ -103,10 +146,15 @@ export default function OrdersPage() {
                   <XCircle size={16} className="mr-2" /> Cancelar
                 </Button>
               )}
-              <Button onClick={() => console.log('Entrar em contato com', order.contactNumber)} className="bg-gray-500 hover:bg-gray-600 text-white">
-                <Phone size={16} className="mr-2" /> Contato
-              </Button>
-            </div>
+              <Button 
+              onClick={() => {
+                const contactUser = 'https://wa.me/' + order.contactNumber;
+                window.open(contactUser, '_blank');
+              }} 
+              className="bg-gray-500 hover:bg-gray-600 text-white">
+              <Phone size={16} className="mr-2" /> Contato
+            </Button>
+                  </div>
           </Card>
         ))}
       </div>
