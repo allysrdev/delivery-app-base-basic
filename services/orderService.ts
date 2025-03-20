@@ -152,3 +152,27 @@ export const listenToOrdersByUser = (userEmail: string, callback: (orders: Order
     off(ordersRef, 'value', handleDataChange);
   };
 };
+
+export const listenToOrders = (callback: (orders: Order[]) => void) => {
+  const db = getDatabase();
+  const ordersRef = ref(db, 'orders');
+
+  // Função que será chamada quando houver mudanças
+  const handleDataChange = (snapshot: DataSnapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      const orders = Object.keys(data).map((key) => data[key]);
+      callback(orders); // Atualiza a lista de pedidos
+    } else {
+      callback([]); // Caso não haja pedidos, passamos um array vazio
+    }
+  };
+
+  // Começa a escutar mudanças
+  onValue(ordersRef, handleDataChange);
+
+  // Retorna uma função para parar de escutar mudanças
+  return () => {
+    off(ordersRef, 'value', handleDataChange);
+  };
+};

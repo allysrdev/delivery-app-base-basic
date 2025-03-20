@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { getOrders, Order, updateOrderStatus } from '@/services/orderService';
+import { listenToOrders, Order, updateOrderStatus } from '@/services/orderService';
 import { Printer, CheckCircle, XCircle, Truck, PackageCheck, Phone } from 'lucide-react';
 
 
@@ -70,12 +70,14 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      const orders = await getOrders();
-      orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      setOrders(orders);
-    };
-    fetchOrders();
+    // Função que vai escutar os pedidos em tempo real
+    const stopListening = listenToOrders((updatedOrders) => {
+      updatedOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setOrders(updatedOrders); // Atualiza os pedidos no estado
+    });
+
+    // Retorna a função de limpeza quando o componente for desmontado
+    return () => stopListening();
   }, []);
 
   const updateStatus = async (orderId: string, newStatus: Order['status']) => {
