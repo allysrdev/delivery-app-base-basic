@@ -7,16 +7,17 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image'
 import { redirect } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 function Page() {
     const { cart } = useCart();
     const [user, setUser] = useState<User | null>(null);
     const session = useSession();
     const [step, setStep] = useState<number>()
+    const searchParams = useSearchParams();
   
     useEffect(() => { 
         setStep(0);
-    
         const fetchUser = async () => {
             try {
                 const userData = await getUser(session.data?.user?.email || '');
@@ -40,7 +41,7 @@ function Page() {
 
     function handleCreateOrder() {
         if (!user) return;
-
+        setTimeout(() => setStep(1), 1000);
         const items = cart.map((item) => ({
             id: item.id,
             quantity: item.quantity,
@@ -48,6 +49,8 @@ function Page() {
             name: item.name
         }));
 
+        const paymentMethod = searchParams.get('paymentMethod');
+        
         createOrder(
             user?.userId || '',
             user?.telephone || '',
@@ -56,6 +59,7 @@ function Page() {
             user?.address || '',
             items,
             cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10,
+            paymentMethod || ''
 
         );
 

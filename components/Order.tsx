@@ -30,8 +30,10 @@ export default function OrderComponent({
     items,
     totalValue,
     status,
+    paymentMethod
 }: {
     orderId: string,
+    paymentMethod: string,
     createdAt: string,
     items: Array<{
         id: string,
@@ -80,6 +82,9 @@ export default function OrderComponent({
                         alt='order-icon'
                     />
                     Valor Total: R${totalValue}
+                </h1>
+                <h1 className='font-semibold flex gap-2 text-sm'>
+                    Forma de Pagamento: {paymentMethod}
                 </h1>
                 <div className='flex gap-2 items-center justify-center pl-2'>
                     {/* Pontinho que pisca */}

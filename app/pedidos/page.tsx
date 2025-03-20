@@ -71,6 +71,7 @@ export default function Page() {
                 totalValue={order.totalValue}
                 key={order.orderId}
                 status={order.status}
+                paymentMethod={order.paymentMethod}
               />
             ))
           )}

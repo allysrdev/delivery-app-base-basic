@@ -52,6 +52,7 @@ const printOrder = (order: Order) => {
           <p><strong>Email:</strong> ${order.email}</p>
           <p><strong>Endereço:</strong> ${order.address}</p>
           <p><strong>Total:</strong> R$ ${order.totalValue.toFixed(2)}</p>
+          <p><strong>Forma de Pagamento:</strong> R$ ${order.paymentMethod}</p>
         </div>
         <div class='items'>
           <h2>Itens do Pedido</h2>
@@ -110,6 +111,7 @@ export default function OrdersPage() {
                 <p>Email: {order.email}</p>
                 <p>Endereço: {order.address}</p>
                 <p>Total: R$ {order.totalValue.toFixed(2)}</p>
+                <p>Forma de Pagamento: {order.paymentMethod}</p>
                 <p>Itens:</p>
                 <ul>
                   {order.items.map((item, index) => (

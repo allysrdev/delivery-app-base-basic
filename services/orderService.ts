@@ -21,6 +21,7 @@ export interface Order {
   items: OrderItem[];
   totalValue: number;
   status: 'Pendente' | 'Preparo' | 'Entrega' | 'Entregue' | 'Cancelado';
+  paymentMethod: string;
 }
 
 // Função para gerar um número de pedido aleatório
@@ -37,6 +38,8 @@ export const createOrder = async (
   address: string,
   items: OrderItem[],
   totalValue: number,
+  paymentMethod?: string,
+  status?: 'Cancelado',
 ): Promise<string | null> => {
   try {
     const db = getDatabase();
@@ -52,7 +55,8 @@ export const createOrder = async (
       address,
       items,
       totalValue,
-      status: 'Pendente'
+      status: status ? status : 'Pendente',
+      paymentMethod: paymentMethod ? paymentMethod : 'Pagamento Online',
     };
 
     const newOrderRef = push(ordersRef);

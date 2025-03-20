@@ -41,7 +41,7 @@ export default async function RootLayout({
           <CldOgImage src="og-image" alt="social image" />
 
           {!isAdminRoute && (
-            <nav className="bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-2 fixed bottom-0 left-0 w-full flex items-center justify-around">
+            <nav className="bg-black/30 h-14 backdrop-blur-md border border-white/10 shadow-lg rounded-md fixed bottom-0 left-0 w-full flex items-center justify-around">
               <Link href="/" className="rounded-md p-2 hover:bg-zinc-600 cursor-pointer">
                 <LucideHouse />
               </Link>
@@ -58,7 +58,7 @@ export default async function RootLayout({
                     width={35}
                     height={35}
                     alt="user-image"
-                    className="rounded-full object-cover border-[2.5px] border-[#ededed]"
+                    className="rounded-full object-cover border-[2.5px] border-[#ededed] h-9 w-9"
                   />
                 ) : (
                   <LucideUser />
