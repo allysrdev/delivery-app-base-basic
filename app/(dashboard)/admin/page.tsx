@@ -9,7 +9,7 @@ export default function DashboardPage() {
       {/* Container principal */}
       <div className="flex-1 p-4">
         <div className="w-full sm:min-w-6xl space-y-10">
-          <h1 className="text-5xl font-bold text-center text-white">Bem-vindo ao Dashboard</h1>
+          <h1 className="text-5xl font-bold text-center text-white">Bem-vindo(a) ao Dashboard</h1>
           <p className="text-lg text-center text-gray-300">
             Gerencie sua loja de forma eficiente e intuitiva.
           </p>

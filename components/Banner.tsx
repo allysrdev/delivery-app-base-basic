@@ -5,7 +5,7 @@ import React from 'react'
 function Banner() {
   const { storeConfig } = useStoreConfig()
   return (
-    <div className="bg-white w-full h-32 sm:h-60 relative rounded-2xl">
+    <div className="bg-white w-full h-32 sm:h-60 relative rounded-2xl lg:h-72">
         <Image
           src={storeConfig.banner}
           alt="Home Banner"
