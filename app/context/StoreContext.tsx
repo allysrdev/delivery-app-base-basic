@@ -35,11 +35,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const isStoreOpen = (): boolean => {
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+    const dayOfWeek = now.getDay();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
-    const isDayValid = dayOfWeek >= 2 || dayOfWeek === 0; // Terça (2) a Domingo (0)
+    const isDayValid = dayOfWeek >= 2 || dayOfWeek === 0; 
     const isTimeValid =
       (currentHour > 18 || (currentHour === 18 && currentMinute >= 0)) &&
       (currentHour < 23 || (currentHour === 23 && currentMinute === 0));

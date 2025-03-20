@@ -19,7 +19,9 @@ export default function Page() {
     if (userId) {
       // Escuta mudanças nos pedidos em tempo real
       const unsubscribe = listenToOrdersByUser(userId, (fetchedOrders) => {
-        setOrders(fetchedOrders);
+        // Ordena os pedidos do mais recente para o mais antigo
+        const sortedOrders = fetchedOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setOrders(sortedOrders);
         setLoading(false);
       });
 
