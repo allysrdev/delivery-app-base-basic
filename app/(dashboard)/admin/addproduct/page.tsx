@@ -1,18 +1,34 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
-import { database } from '../../../../services/firebase';
+import { database } from "../../../../services/firebase";
 import { ref as dbRef, set } from "firebase/database";
 import { v4 as uuidv4 } from "uuid";
 import CloudinaryUploadWidget from "@/components/CloudinaryUploadWidget";
-import { Cloudinary } from '@cloudinary/url-gen';
-import { AdvancedImage, responsive, placeholder } from '@cloudinary/react';
+import { Cloudinary } from "@cloudinary/url-gen";
+import { AdvancedImage, responsive, placeholder } from "@cloudinary/react";
 import { Input } from "@/components/ui/input";
 import Box from "@/components/ui/box";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { LucidePencil, LucideTrash } from "lucide-react";
 import Image from "next/image";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Product } from "@/components/ProductCard";
 import { getProducts, updateProduct, deleteProduct } from "@/services/productService";
 import { useRouter } from "next/navigation";
@@ -24,7 +40,7 @@ const AddProduct = () => {
   const [price, setPrice] = useState<number>(0);
   const [uploading, setUploading] = useState(false);
   const [products, setProducts] = useState<Product[]>();
-  const [publicId, setPublicId] = useState('');
+  const [publicId, setPublicId] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
@@ -51,10 +67,10 @@ const AddProduct = () => {
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
     setName(product.name);
-    setDescription(product.description || '');
+    setDescription(product.description || "");
     setPrice(product.price);
     setPublicId(product.imageUrl);
-    setCategory(product.category || 'Outros');
+    setCategory(product.category || "Outros");
     router.refresh();
   };
 
@@ -67,7 +83,9 @@ const AddProduct = () => {
     if (productToDelete) {
       try {
         await deleteProduct(productToDelete);
-        setProducts((prevProducts) => prevProducts?.filter((product) => product.id !== productToDelete));
+        setProducts((prevProducts) =>
+          prevProducts?.filter((product) => product.id !== productToDelete)
+        );
         alert("Produto excluído com sucesso!");
       } catch (error) {
         console.error("Erro ao excluir o produto:", error);
@@ -96,11 +114,11 @@ const AddProduct = () => {
         alert("✅ Produto atualizado com sucesso!");
       } else {
         await set(dbRef(database, `products/${productId}`), {
-          name: name,
-          description: description,
-          price: price,
-          imageUrl: imageUrl,
-          category: category
+          name,
+          description,
+          price,
+          imageUrl,
+          category,
         });
         alert("✅ Produto adicionado com sucesso!");
       }
@@ -118,144 +136,200 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="flex sm:flex-row flex-col justify-center gap-4">
-      <Box>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 sm:min-w-md w-72 mx-auto rounded-lg shadow-lg pb-16">
-          <h2 className="text-lg font-bold">{selectedProduct ? "Editar Produto" : "Adicionar Produto"}</h2>
-          <label htmlFor="productName">Nome do Produto</label>
-          <Input 
-            name="productName" 
-            type="text" 
-            placeholder="Nome do produto" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
-            className="p-2 border rounded" 
-            required 
-          />
-          <label htmlFor="productName">Categoria</label>
-          <Input 
-            name="category" 
-            type="text" 
-            placeholder="Categoria" 
-            value={category} 
-            onChange={(e) => setCategory(e.target.value)} 
-            className="p-2 border rounded" 
-            required 
-          />
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 to-black p-6">
+      <div className="flex flex-col sm:flex-row justify-center gap-8">
+        {/* Formulário */}
+        <Box>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <h2 className="text-3xl font-extrabold text-center text-white">
+              {selectedProduct ? "Editar Produto" : "Adicionar Produto"}
+            </h2>
 
-          <label htmlFor="description">Descrição</label>
-          <textarea 
-            name="description" 
-            placeholder="Descrição do produto" 
-            value={description} 
-            onChange={(e) => setDescription(e.target.value)} 
-            className="p-2 border rounded" 
-            required 
-          />
-
-          <label htmlFor="value">Preço</label>
-          <Input 
-            name="value" 
-            type="number" 
-            placeholder="Preço (R$)" 
-            value={price} 
-            onChange={(e) => setPrice(Number(e.target.value))} 
-            className="p-2 border rounded" 
-            required 
-          />
-
-          {publicId && (
-            <div className="image-preview" style={{ width: '150px', margin: '20px auto' }}>
-              <AdvancedImage
-                style={{ maxWidth: '100%' }}
-                cldImg={cld.image(publicId)}
-                plugins={[responsive(), placeholder()]}
+            <div className="flex flex-col">
+              <label htmlFor="productName" className="text-white font-semibold mb-1">
+                Nome do Produto
+              </label>
+              <Input
+                name="productName"
+                type="text"
+                placeholder="Nome do produto"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="p-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
+                required
               />
             </div>
-          )}
 
-          <label>Imagem do Produto</label>
-          <CloudinaryUploadWidget
-            uwConfig={{
-              cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
-              uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!,
-              cropping: true,
-            }}
-            setPublicId={setPublicId}
-          />
+            <div className="flex flex-col">
+              <label htmlFor="category" className="text-white font-semibold mb-1">
+                Categoria
+              </label>
+              <Input
+                name="category"
+                type="text"
+                placeholder="Categoria"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="p-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
+                required
+              />
+            </div>
 
-          <button type="submit" className="p-2 bg-black border border-white text-white rounded disabled:bg-gray-400" disabled={uploading}>
-            {uploading ? "Enviando..." : selectedProduct ? "Atualizar Produto" : "Adicionar Produto"}
-          </button>
-        </form>
-      </Box>
+            <div className="flex flex-col">
+              <label htmlFor="description" className="text-white font-semibold mb-1">
+                Descrição
+              </label>
+              <textarea
+                name="description"
+                placeholder="Descrição do produto"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="p-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
+                required
+              />
+            </div>
 
-      <div className="max-w-lg">
-        <Table className="w-lg">
-          <TableHeader>
-            <TableRow className="text-white">
-              <TableHead className="w-[100px]">Imagem</TableHead>
-              <TableHead>Nome</TableHead>
-              <TableHead>Descrição</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead className="text-right">Editar</TableHead>
-              <TableHead className="text-right">Excluir</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products
-              ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-              .map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <Image width={50} height={50} alt="imagem do produto" src={product.imageUrl} />
-                  </TableCell>
-                  <TableCell className="max-w-32 whitespace-normal break-words">{product.name}</TableCell>
-                  <TableCell className="max-w-32 whitespace-normal break-words">{product.description}</TableCell>
-                  <TableCell className="text-right">
-                    {product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="outline" className="bg-black" onClick={() => handleEdit(product)}>
-                      <LucidePencil />
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="outline" className="bg-black" onClick={() => handleDelete(product.id)}>
-                      <LucideTrash size={25} />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
+            <div className="flex flex-col">
+              <label htmlFor="value" className="text-white font-semibold mb-1">
+                Preço
+              </label>
+              <Input
+                name="value"
+                type="number"
+                placeholder="Preço (R$)"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className="p-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
+                required
+              />
+            </div>
 
-        {/* Controles de Paginação */}
-        <div className="flex justify-end gap-4 mt-4">
-          <Button
-            variant="outline"
-            className="bg-black text-white"
-            onClick={() => setCurrentPage(current => Math.max(current - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            Anterior
-          </Button>
-          <span className="flex items-center px-4">
-            Página {currentPage} de {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            className="bg-black text-white"
-            onClick={() => setCurrentPage(current => Math.min(current + 1, totalPages))}
-            disabled={currentPage === totalPages || totalPages === 0}
-          >
-            Próximo
-          </Button>
+            {publicId && (
+              <div className="mx-auto my-4" style={{ width: "150px" }}>
+                <AdvancedImage
+                  style={{ borderRadius: "12px" }}
+                  cldImg={cld.image(publicId)}
+                  plugins={[responsive(), placeholder()]}
+                />
+              </div>
+            )}
+
+            <div className="flex flex-col">
+              <label className="text-white font-semibold mb-1">Imagem do Produto</label>
+              <CloudinaryUploadWidget
+                uwConfig={{
+                  cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
+                  uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!,
+                  cropping: true,
+                }}
+                setPublicId={setPublicId}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="p-3 mt-4 bg-black text-white rounded-lg border border-white hover:bg-gray-800 transition-colors disabled:bg-gray-500"
+              disabled={uploading}
+            >
+              {uploading
+                ? "Enviando..."
+                : selectedProduct
+                ? "Atualizar Produto"
+                : "Adicionar Produto"}
+            </button>
+          </form>
+        </Box>
+
+        {/* Tabela de Produtos */}
+        <div className="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-xl shadow-2xl p-6 overflow-x-auto">
+          <Table className="w-full">
+            <TableHeader>
+              <TableRow className="bg-black text-white">
+                <TableHead className="w-[100px]">Imagem</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Descrição</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+                <TableHead className="text-right">Editar</TableHead>
+                <TableHead className="text-right">Excluir</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products
+                ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((product) => (
+                  <TableRow key={product.id} className="hover:bg-gray-200 transition-colors">
+                    <TableCell className="p-3">
+                      <Image
+                        width={50}
+                        height={50}
+                        alt="Imagem do produto"
+                        src={product.imageUrl}
+                        className="rounded-lg"
+                      />
+                    </TableCell>
+                    <TableCell className="p-3 max-w-xs break-words text-white">
+                      {product.name}
+                    </TableCell>
+                    <TableCell className="p-3 max-w-xs break-words text-white">
+                      {product.description}
+                    </TableCell>
+                    <TableCell className="p-3 text-right font-semibold text-white">
+                      {product.price.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </TableCell>
+                    <TableCell className="p-3 text-right">
+                      <Button
+                        variant="outline"
+                        className="bg-black text-white hover:bg-gray-800 transition-colors"
+                        onClick={() => handleEdit(product)}
+                      >
+                        <LucidePencil />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="p-3 text-right">
+                      <Button
+                        variant="outline"
+                        className="bg-black text-white hover:bg-gray-800 transition-colors"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        <LucideTrash size={25} />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+
+          {/* Controles de Paginação */}
+          <div className="flex justify-end items-center gap-4 mt-6">
+            <Button
+              variant="outline"
+              className="bg-black text-white hover:bg-gray-800 transition-colors"
+              onClick={() => setCurrentPage((current) => Math.max(current - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </Button>
+            <span className="px-4 text-white">
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              className="bg-black text-white hover:bg-gray-800 transition-colors"
+              onClick={() => setCurrentPage((current) => Math.min(current + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              Próximo
+            </Button>
+          </div>
         </div>
       </div>
 
+      {/* AlertDialog */}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent className="bg-black">
+        <AlertDialogContent className="bg-black text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Produto</AlertDialogTitle>
             <AlertDialogDescription>
@@ -263,8 +337,13 @@ const AddProduct = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-black">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600">
+            <AlertDialogCancel className="bg-black text-white hover:bg-gray-800 transition-colors">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 text-white hover:bg-red-700 transition-colors"
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
