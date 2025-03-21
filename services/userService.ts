@@ -26,7 +26,7 @@ export const addUser = async ({ userId, name, email, address, telephone, profile
       email,
       name,
       address,
-      telephone,
+      telephone: "55" + telephone,
       profileImage,
       created_at: new Date().toISOString(),
       role: 'Usuário',

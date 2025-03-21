@@ -72,6 +72,7 @@ export default function Page() {
                 key={order.orderId}
                 status={order.status}
                 paymentMethod={order.paymentMethod}
+                troco={order.troco || ''}
               />
             ))
           )}

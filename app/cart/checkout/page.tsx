@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect,  useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/app/context/CartContext";
 import {
@@ -15,10 +15,12 @@ import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 import CheckoutElement from "@/components/CheckoutElement";
 import Box from "@/components/ui/box";
-import { LucideAtSign, LucideMapPinHouse, LucidePhoneCall, LucideUser } from "lucide-react";
+import { LucideAtSign, LucideInfo, LucideMapPinHouse, LucideMapPinPlus, LucidePhoneCall, LucideUser } from "lucide-react";
 import { getOrdersByUser } from "@/services/orderService";
 import { redirect } from "next/navigation";
 import axios from "axios";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 
 
@@ -88,6 +90,21 @@ const CheckoutPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const session = useSession();
   const [isWithinRadius, setIsWithinRadius] = useState<boolean | null>(null);
+  const [troco, setTroco] = useState("")
+  const [newAddress, setNewAddress] = useState<string>("")
+
+
+  useEffect(() => {
+    const order = async () => {
+      const userOrders = await getOrdersByUser(user?.email || '');
+      const hasPendingOrder = userOrders?.some(order => order.status === "Pendente")
+      if (hasPendingOrder) {
+        redirect('/pedidos')
+      }
+      
+    }
+    order();
+  }, [user?.email])
   
 
   useEffect(() => {
@@ -116,29 +133,17 @@ const CheckoutPage = () => {
       }
     };
     fetchUser();
-  }, [session, isWithinRadius])
-  
-  useEffect(() => {
-    const order = async () => {
-      const userOrders = await getOrdersByUser(user?.email || '');
-      const hasPendingOrder = userOrders?.some(order => order.status === "Pendente")
-      if (hasPendingOrder) {
-        redirect('/pedidos')
-      }
-      
-    }
-    order();
-  }, [user?.email])
+  }, [session])
   
 
 
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
-  };
-
+  }
 
 
   return (
@@ -161,6 +166,22 @@ const CheckoutPage = () => {
                       <p className="text-xs flex gap-1"><LucideAtSign size={15}  />{user?.email }</p>
                       <p className="text-xs flex gap-1"><LucidePhoneCall size={15} />{user?.telephone }</p>
                       <p className="text-xs flex gap-1"><LucideMapPinHouse size={15} />{user?.address}</p>
+                    <Label className=" flex gap-2 items-start text-xs">
+                      <LucideMapPinPlus size={15} /> Entregar em outro endereço?</Label>
+                    <Input
+                      type="text"
+                      name="newAddress"
+                      placeholder="Digite o endereço completo"
+                      value={newAddress}
+                      onChange={(e) => setNewAddress(e.target.value)}
+                      className="text-xs"
+                    />
+                    <p className="text-xs flex gap-2">
+                        <LucideInfo size={25} />
+                        Este endereço não ficará salvo nem substituirá o endereço cadastrado. Para alterar o seu
+                        endereço original vá em perfil {">"} editar perfil
+                      </p>
+                    
                   </div>
                     </Box>
                     
@@ -185,10 +206,14 @@ const CheckoutPage = () => {
                 </div>
             <AccordionItem value="item-1" >
               <AccordionTrigger>Pagar na Entrega</AccordionTrigger>
-              <AccordionContent>
-                  
+                <AccordionContent>
+                  <p>Você precisa de troco?</p>
+                  <Input type="string" name="troco" placeholder="R$100" onChange={(e) => setTroco(e.target.value)} />
 
-                <Button className='cursor-pointer h-12 bg-black border border-white/30'>Fazer Pedido</Button>
+                  <Button className='cursor-pointer h-12 bg-black border border-white/30'
+                    onClick={() =>
+                      redirect(`/cart/checkout/return/sucess?paymentMethod=entrega&troco=${troco}${newAddress ? `&newAddress=${newAddress}` : ""}`)
+                      }>Fazer Pedido</Button>
               </AccordionContent>
               </AccordionItem>
 
@@ -205,7 +230,7 @@ const CheckoutPage = () => {
                       currency: "brl",
                     }}
                   >
-                    <CheckoutElement amount={(cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10) * 100} />
+                    <CheckoutElement newAddress={newAddress} amount={(cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10) * 100} />
                 </Elements>
               </AccordionContent>
               </AccordionItem>

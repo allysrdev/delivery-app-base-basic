@@ -70,7 +70,7 @@ export default function Home() {
 
         {/* Conteúdo do Popover (carrinho) */}
         <PopoverContent
-          className={`mx-4 bg-black/50 backdrop-blur-md border shadow-lg text-white fixed -top-40 -right-8 w-[23rem] min-h-52
+          className={`mx-4 bg-black/50 backdrop-blur-md border shadow-lg text-white fixed -top-40 -right-8 w-[23rem] h-52
           sm:min-w-[35rem] sm:min-h-[35rem] sm:fixed sm:-top-80 sm:right-10 flex flex-col overflow-x-hidden`}
         >
           <h1 className="font-bold text-xl flex gap-2 items-center">Carrinho</h1>

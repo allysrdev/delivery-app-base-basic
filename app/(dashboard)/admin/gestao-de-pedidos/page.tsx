@@ -112,6 +112,7 @@ export default function OrdersPage() {
                 <p>Endereço: {order.address}</p>
                 <p>Total: R$ {order.totalValue.toFixed(2)}</p>
                 <p>Forma de Pagamento: {order.paymentMethod}</p>
+                <p>Troco: para {order.troco}</p>
                 <p>Itens:</p>
                 <ul>
                   {order.items.map((item, index) => (

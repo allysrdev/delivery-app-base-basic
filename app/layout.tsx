@@ -12,6 +12,7 @@ import ClientAuthCheck from '@/services/ClientAuthCheck';
 import { headers } from 'next/headers';
 import { StoreProvider } from './context/StoreContext';
 import { getUser } from '@/services/userService';
+import { Providers } from '@/providers/QueryClientProvider';
 
 export const metadata: Metadata = {
   title: 'Borchelle Fast Food',
@@ -37,7 +38,11 @@ export default async function RootLayout({
       <body className="antialiased p-4">
         <SessionProvider>
           <StoreProvider>
-          <CartProvider>{children}</CartProvider>
+            <CartProvider>
+              <Providers>
+                {children}
+              </Providers>
+            </CartProvider>
           <CldOgImage src="og-image" alt="social image" />
 
           {!isAdminRoute && (

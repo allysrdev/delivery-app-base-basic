@@ -4,20 +4,20 @@ import { Progress } from '@/components/ui/progress';
 import { createOrder } from '@/services/orderService';
 import { getUser, User } from '@/services/userService';
 import { useSession } from 'next-auth/react';
-import Image from 'next/image'
+import Image from 'next/image';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 function Page() {
     const { cart } = useCart();
     const [user, setUser] = useState<User | null>(null);
     const session = useSession();
-    const [step, setStep] = useState<number>()
+    const [step, setStep] = useState<number>(0);
     const searchParams = useSearchParams();
+    const [orderCreated, setOrderCreated] = useState<boolean>(false);
   
     useEffect(() => { 
-        setStep(0);
         const fetchUser = async () => {
             try {
                 const userData = await getUser(session.data?.user?.email || '');
@@ -34,13 +34,15 @@ function Page() {
     }, [session.data?.user?.email]);
 
     useEffect(() => {
-        if (user) {
+        if (user && !orderCreated) {
             handleCreateOrder();
         }
     }, [user]);
 
-    function handleCreateOrder() {
-        if (!user) return;
+    async function handleCreateOrder() {
+        if (!user || orderCreated) return;
+        setOrderCreated(true);
+
         setTimeout(() => setStep(1), 1000);
         const items = cart.map((item) => ({
             id: item.id,
@@ -50,17 +52,34 @@ function Page() {
         }));
 
         const paymentMethod = searchParams.get('paymentMethod');
+        let troco = searchParams.get('troco') || "";
+        const newAddress = searchParams.get('newAddress') || "";
+
+        if (troco && !troco.includes("R$")) {
+            troco = `R$${troco}`;
+        }
+
         
-        createOrder(
+
+        const paymentDescriptions: Record<string, string> = {
+            cartao: "Pago online com cartão de crédito",
+            entrega: "Pagamento na entrega",
+            pix: "Pago online com Pix",
+        };
+
+        const paymentText = paymentDescriptions[paymentMethod ?? ""] || "Método de pagamento não reconhecido";
+
+        await createOrder(
             user?.userId || '',
             user?.telephone || '',
             user?.name || '',
             user?.email || '',
-            user?.address || '',
+            newAddress ? newAddress : user?.address || '',
             items,
             cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10,
-            paymentMethod || ''
-
+            paymentText || '',
+            "Pendente",
+            troco || ''
         );
 
         setTimeout(() => setStep(2), 2000);
@@ -76,7 +95,7 @@ function Page() {
                         <br />
                         <Progress value={33} />
                         <br />
-                        <h1>Pagamento aprovado!</h1>
+                        <h1>Pedido enviado!</h1>
                     </>
                 ) : step === 1 ? (
                     <>
@@ -92,7 +111,7 @@ function Page() {
                         <br />
                         <Progress value={100} />
                         <br />
-                        <h1>Pedido enviado!</h1>
+                        <h1>Pedido processado!</h1>
                     </>
                 )}
             </div>

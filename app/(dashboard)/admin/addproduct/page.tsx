@@ -197,7 +197,7 @@ const AddProduct = () => {
                 name="value"
                 type="number"
                 placeholder="Preço (R$)"
-                value={price}
+                value={price === 0 ? "" : price.toString()}
                 onChange={(e) => setPrice(Number(e.target.value))}
                 className="p-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
                 required
@@ -257,7 +257,7 @@ const AddProduct = () => {
               {products
                 ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                 .map((product) => (
-                  <TableRow key={product.id} className="hover:bg-gray-200 transition-colors">
+                  <TableRow key={product.id} className="hover:bg-gray-800 transition-colors">
                     <TableCell className="p-3">
                       <Image
                         width={50}
@@ -270,7 +270,7 @@ const AddProduct = () => {
                     <TableCell className="p-3 max-w-xs break-words text-white">
                       {product.name}
                     </TableCell>
-                    <TableCell className="p-3 max-w-xs break-words text-white">
+                    <TableCell className="p-3 w-1.5 break-words text-white">
                       {product.description}
                     </TableCell>
                     <TableCell className="p-3 text-right font-semibold text-white">

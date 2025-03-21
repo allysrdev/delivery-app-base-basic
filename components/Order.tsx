@@ -30,10 +30,12 @@ export default function OrderComponent({
     items,
     totalValue,
     status,
-    paymentMethod
+    paymentMethod,
+    troco
 }: {
     orderId: string,
     paymentMethod: string,
+    troco: string,
     createdAt: string,
     items: Array<{
         id: string,
@@ -81,7 +83,9 @@ export default function OrderComponent({
                         height={25}
                         alt='order-icon'
                     />
-                    Valor Total: R${totalValue}
+                    Valor Total: R${totalValue}, {" "}
+                    troco para {troco}
+
                 </h1>
                 <h1 className='font-semibold flex gap-2 text-sm'>
                     Forma de Pagamento: {paymentMethod}

@@ -9,8 +9,9 @@ function formatarCentavosParaReais(centavos: number) {
 }
 
 export default function CheckoutElement({
-    amount
-}: { amount: number }) {
+    amount,
+    newAddress
+}: { amount: number, newAddress?: string }) {
     const stripe = useStripe();
     const elements = useElements()
 
@@ -48,7 +49,7 @@ export default function CheckoutElement({
             elements,
             clientSecret,
             confirmParams: {
-                return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart/checkout/return/sucess?amount=${amount}&paymentMethod=cartao`,
+                return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart/checkout/return/sucess?amount=${amount}&paymentMethod=cartao${newAddress ? `&newAddress=${newAddress}` : ''}`,
             }
         })
         if (error) {
