@@ -15,7 +15,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import CheckoutElement from "@/components/CheckoutElement";
 import Box from "@/components/ui/box";
-import { LucideAtSign, LucideInfo, LucideMapPinHouse, LucideMapPinPlus, LucidePhoneCall, LucideUser } from "lucide-react";
+import { LucideAtSign, LucideCircleX, LucideInfo, LucideMapPinHouse, LucideMapPinPlus, LucidePhoneCall, LucideUser } from "lucide-react";
 import { getOrdersByUser } from "@/services/orderService";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -40,12 +40,10 @@ const geocodeAddress = async (address: string): Promise<{ lat: number; lng: numb
     if (results.length > 0) {
       const { lat, lng } = results[0].geometry.location;
       return { lat, lng };
-    } else {
-      console.error('Endereço não encontrado.');
-      return null;
     }
+    return null;
   } catch (error) {
-    console.error('Erro ao geocodificar o endereço:', error);
+    console.log(error)
     return null;
   }
 };
@@ -58,8 +56,7 @@ const haversineDistance = (
   coords2: { lat: number; lng: number }
 ): number => {
   const toRad = (value: number) => (value * Math.PI) / 180;
-
-  const R = 6371e3; // Raio da Terra em metros
+  const R = 6371e3;
   const φ1 = toRad(coords1.lat);
   const φ2 = toRad(coords2.lat);
   const Δφ = toRad(coords2.lat - coords1.lat);
@@ -70,24 +67,15 @@ const haversineDistance = (
     Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  const distance = R * c;
-  return distance; // Distância em metros
-};
-
-const isWithinDeliveryRadius = (
-  userCoords: { lat: number; lng: number },
-  centerCoords: { lat: number; lng: number },
-  radius: number
-): boolean => {
-  const distance = haversineDistance(userCoords, centerCoords);
-  return distance <= radius;
+  return R * c;
 };
 
 const CheckoutPage = () => {
   const { cart } = useCart();
   const [user, setUser] = useState<User | null>(null);
   const session = useSession();
-  const [isWithinRadius, setIsWithinRadius] = useState<boolean | null>(null);
+  const [isNewAddressWithinRadius, setIsNewAddressWithinRadius] = useState<boolean | null>(null);
+  const [isAddressWithinRadius, setIsAddressWithinRadius] = useState<boolean | null>(null);
   const [troco, setTroco] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [isCheckingAddress, setIsCheckingAddress] = useState(false);
@@ -113,50 +101,52 @@ const CheckoutPage = () => {
       try {
         const userData = await getUser(session.data?.user?.email || '');
         setUser(userData);
-
-        if (userData?.address) {
-          const userCoords = await geocodeAddress(userData.address);
-          if (userCoords) {
-            const withinRadius = isWithinDeliveryRadius(
-              userCoords,
-              deliveryCenter,
-              deliveryRadius
-            );
-            setIsWithinRadius(withinRadius);
-          }
-        }
       } catch (error) {
         console.error('Erro ao buscar dados do usuário:', error);
       }
     };
     fetchUser();
-  }, [session, router]);
+    checkAddress(user?.address || '', false)
+  }, [session, router, user?.address]);
 
-  const checkAddress = async (address: string) => {
-    setIsCheckingAddress(true);
+  const checkAddress = async (address: string, newAddress?: boolean) => {
+    if (newAddress) {
+      setIsCheckingAddress(true);
     try {
       const userCoords = await geocodeAddress(address);
       if (userCoords) {
-        const withinRadius = isWithinDeliveryRadius(
-          userCoords,
-          deliveryCenter,
-          deliveryRadius
-        );
-        setIsWithinRadius(withinRadius);
+        const distance = haversineDistance(userCoords, deliveryCenter);
+        const withinRadius = distance <= deliveryRadius;
+        setIsNewAddressWithinRadius(withinRadius);
       } else {
-        setIsWithinRadius(false);
+        setIsNewAddressWithinRadius(false);
       }
     } catch (error) {
-      console.error('Erro ao verificar endereço:', error);
-      setIsWithinRadius(false);
+      console.log(error)
+      setIsNewAddressWithinRadius(false);
     } finally {
       setIsCheckingAddress(false);
+    }
+    } else {
+    try {
+      const userCoords = await geocodeAddress(address);
+      if (userCoords) {
+        const distance = haversineDistance(userCoords, deliveryCenter);
+        const withinRadius = distance <= deliveryRadius;
+        setIsAddressWithinRadius(withinRadius);
+      } else {
+        setIsAddressWithinRadius(false);
+      }
+    } catch (error) {
+      console.log(error)
+      setIsAddressWithinRadius(false);
+    }
     }
   };
 
   const handleNewAddressCheck = async () => {
     if (newAddress.trim()) {
-      await checkAddress(newAddress);
+      await checkAddress(newAddress, true);
     }
   };
 
@@ -167,11 +157,32 @@ const CheckoutPage = () => {
     }).format(value);
   };
 
-  const canCheckout = () => {
-    if (newAddress) {
-      return isWithinRadius;
+  const renderAddressValidation = () => {
+    if (!newAddress) return null;
+    
+    if (isCheckingAddress) {
+      return <p className="text-xs text-gray-500">Verificando endereço...</p>;
     }
-    return isWithinRadius;
+    
+    if (isNewAddressWithinRadius === false) {
+      return (
+        <p className="flex gap-2 items-center text-yellow-500 text-xs">
+          <LucideCircleX size={15} />
+          Atenção: Este endereço está fora do nosso raio de entrega padrão
+        </p>
+      );
+    }
+    
+    if (isNewAddressWithinRadius === true) {
+      return (
+        <p className="flex gap-2 items-center text-green-500 text-xs">
+          <LucideInfo size={15} />
+          Endereço dentro da nossa área de entrega
+        </p>
+      );
+    }
+    
+    return null;
   };
 
   return (
@@ -183,7 +194,7 @@ const CheckoutPage = () => {
           <div className="text-center py-8">
             <p className="text-xl text-gray-400">Seu carrinho está vazio</p>
           </div>
-        ) : canCheckout() ? (
+        ) : (
           <Accordion className="w-full" type="single" collapsible>
             <div className="flex flex-col gap-4">
               <Box>
@@ -191,7 +202,8 @@ const CheckoutPage = () => {
                   <p className="text-xs flex gap-1"><LucideUser size={15} />{user?.name}</p>
                   <p className="text-xs flex gap-1"><LucideAtSign size={15} />{user?.email}</p>
                   <p className="text-xs flex gap-1"><LucidePhoneCall size={15} />{user?.telephone}</p>
-                  <p className="text-xs flex gap-1"><LucideMapPinHouse size={15} />{user?.address}</p>
+                  <p className={`text-xs flex gap-1 ${isAddressWithinRadius === false ? "text-red-500" : ""}`}><LucideMapPinHouse size={15} />{user?.address}</p>
+                  {isAddressWithinRadius ? "" : <p className="text-xs flex gap-1 text-red-500"><LucideCircleX size={15} />Endereço fora do nosso raio de entrega.</p>}
                   <Label className="flex gap-2 items-start text-xs">
                     <LucideMapPinPlus size={15} /> Entregar em outro endereço?
                   </Label>
@@ -201,36 +213,38 @@ const CheckoutPage = () => {
                       name="newAddress"
                       placeholder="Digite o endereço completo"
                       value={newAddress}
-                      onChange={(e) => setNewAddress(e.target.value)}
+                      onChange={(e) => {
+                        setNewAddress(e.target.value);
+                        setIsNewAddressWithinRadius(null);
+                      }}
                       className="text-xs flex-1"
                     />
                     <Button 
                       onClick={handleNewAddressCheck}
-                      disabled={isCheckingAddress || !newAddress.trim()}
+                      disabled={isCheckingAddress || !newAddress.trim()}  
                     >
                       {isCheckingAddress ? "Verificando..." : "Verificar"}
                     </Button>
                   </div>
-                  <p className="text-xs flex gap-2">
-                    <LucideInfo size={25} />
-                    Este endereço não ficará salvo nem substituirá o endereço cadastrado. Para alterar o seu
-                    endereço original vá em perfil {">"} editar perfil
+                  {renderAddressValidation()}
+                  <p className="text-xs flex gap-2 items-center">
+                    <LucideInfo size={15} />
+                    Este endereço não ficará salvo no seu cadastro
                   </p>
                 </div>
               </Box>
 
-              {cart.map((item) => {
-                return (
-                  <div key={item.id} className="flex gap-2">
-                    <Image src={item.imageUrl} width={60} height={60} className="rounded-md" alt="" />
-                    <div>
-                      <h1 className="font-bold">{item.name}</h1>
-                      <p className="text-sm text-gray-500">{item.quantity}x</p>
-                      <p>Preço: {formatCurrency(item.price)}</p>
-                    </div>
+              {cart.map((item) => (
+                <div key={item.id} className="flex gap-2">
+                  <Image src={item.imageUrl} width={60} height={60} className="rounded-md" alt="" />
+                  <div>
+                    <h1 className="font-bold">{item.name}</h1>
+                    <p className="text-sm text-gray-500">{item.quantity}x</p>
+                    <p>Preço: {formatCurrency(item.price)}</p>
                   </div>
-                );
-              })}
+                </div>
+              ))}
+
               <div>
                 <p>Subtotal: {formatCurrency(cart.reduce((acc, product) => acc + product.price * product.quantity, 0))}</p>
                 <p>Frete: R$ 10</p>
@@ -280,13 +294,6 @@ const CheckoutPage = () => {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        ) : (
-          <div className="w-full h-full flex flex-col gap-4 items-center justify-center">
-            <h1 className="text-2xl">Você não está dentro do raio de entrega</h1>
-            <p>Infelizmente o seu endereço não é coberto pelo raio de entrega da nossa loja.</p>
-            <p>Dúvidas?</p>
-            <Button>Entre em contato</Button>
-          </div>
         )}
       </div>
     </div>
