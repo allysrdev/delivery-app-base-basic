@@ -280,7 +280,7 @@ const CheckoutPage = () => {
                     currency: "brl",
                   }}
                 >
-                  <CheckoutElement newAddress={newAddress} amount={(cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10) * 100} />
+                  <CheckoutElement isAddressWithinRadius={isNewAddressWithinRadius && isAddressWithinRadius} newAddress={newAddress} amount={(cart.reduce((acc, product) => acc + product.price * product.quantity, 0) + 10) * 100} />
                 </Elements>
               </AccordionContent>
             </AccordionItem>
