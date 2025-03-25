@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import StoreProfile from '@/components/StoreProfile';
-import Banner from '@/components/Banner';
+import Image from 'next/image';
+
+
 
 const Configuracoes: React.FC = () => {
   const { storeConfig, updateStoreConfig } = useStoreConfig();
@@ -121,9 +123,15 @@ const Configuracoes: React.FC = () => {
           <Button type="submit">Salvar Configurações</Button>
         </form>
 
-        <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-4 gap-4 flex flex-col min-w-md">
-        <Banner />
-        <StoreProfile />
+        <div className="bg-black/30 backdrop-blur-md rounded-md p-4 gap-4 flex flex-col sm:min-w-lg items-center justify-center">
+          <StoreProfile />
+          <Image
+            src="/poweredby.png"
+            alt="powered by guaiamum digital"
+            width={200}
+            height={100}
+            className="rounded-lg"
+          />
         </div>
       </div>
     </div>
