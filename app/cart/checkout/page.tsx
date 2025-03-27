@@ -284,7 +284,7 @@ const CheckoutPage = () => {
                 </Elements>
               </AccordionContent>
             </AccordionItem>
-
+{/* 
             <AccordionItem value="item-3">
               <AccordionTrigger>Pagar com Pix</AccordionTrigger>
               <AccordionContent>
@@ -292,7 +292,7 @@ const CheckoutPage = () => {
                   Fazer Pedido
                 </Button>
               </AccordionContent>
-            </AccordionItem>
+            </AccordionItem> */}
           </Accordion>
         )}
       </div>
