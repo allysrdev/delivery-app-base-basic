@@ -21,7 +21,6 @@ export default function Home() {
   const session = useSession();
   const [user, setUser] = useState<User | null>(null);
 
-  // Efeito para buscar os dados do usuário quando a sessão muda
   useEffect(() => {
     const fetchUser = async () => {
       if (session?.data?.user) {

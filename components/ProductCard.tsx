@@ -23,13 +23,13 @@ export interface Product {
   description?: string;
   quantity: number;
   category?: string;
+  discount?: number;
   addToCart?: (item: CartItem) => void;
   removeFromCart?: (id: string) => void;
 }
 
 
-export default function ProductCard({ id, name, price,quantity, description, imageUrl, addToCart, removeFromCart }: Product) {
-
+export default function ProductCard({ id, name, price, quantity, description, imageUrl, addToCart, removeFromCart, discount }: Product) {
   return (
     <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-lg rounded-md p-4 flex sm:flex-col items-start sm:items-center sm:max-w-sm w-full sm:h-96 h-56 gap-4">
       <div className="flex-shrink-0 h-28">
@@ -61,7 +61,17 @@ export default function ProductCard({ id, name, price,quantity, description, ima
                   </div>
                   <div className="flex flex-col gap-2">
                     <h1 className="text-lg text-white font-medium">{name}</h1>
-                    <p className="text-lg text-white font-medium">R${price},00</p>
+                      {discount && discount > 0 ? (
+                        <div className='flex gap-2'>
+                          <h2 className="text-red-400 text-lg font-semibold line-through">R${price},00</h2>
+                          <h2 className="text-green-400 text-lg font-semibold">
+                            R${(price * (1 - discount / 100)).toFixed(2).replace('.', ',')}
+                          </h2>
+                        </div>
+                      ): (
+                          <h2 className="text-white text-lg font-semibold">R${price},00</h2>
+                          
+                      )}
                     <p className="text-sm text-white font-light">{description}</p>
 
                 </div>
@@ -78,7 +88,17 @@ export default function ProductCard({ id, name, price,quantity, description, ima
         <p className="text-gray-300 text-sm line-clamp-3 overflow-hidden">
           {description}
         </p>
-        <h2 className="text-white text-lg font-semibold">R${price},00</h2>
+        {discount && discount > 0 ? (
+          <div className='flex gap-2'>
+            <h2 className="text-red-400 text-lg font-semibold line-through">R${price},00</h2>
+            <h2 className="text-green-400 text-lg font-semibold">
+              R${(price * (1 - discount / 100)).toFixed(2).replace('.', ',')}
+            </h2>
+          </div>
+        ): (
+            <h2 className="text-white text-lg font-semibold">R${price},00</h2>
+            
+        )}
         <div className="mt-auto flex items-center justify-center space-x-4">
           <div className="flex gap-2 items-center">
             <Button onClick={() => {
@@ -89,7 +109,7 @@ export default function ProductCard({ id, name, price,quantity, description, ima
             <p>{quantity}</p>
             <Button
               onClick={() => {
-                addToCart?.({ name, price, imageUrl, id, quantity })
+                addToCart?.({ name, price: discount ? Number((price * (1 - discount / 100)).toFixed(2)) : price, imageUrl, id, quantity })
               }}
               className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/50 shadow-lg text-white  flex items-center justify-center hover:bg-black/50 p-1 cursor-pointer"
             >

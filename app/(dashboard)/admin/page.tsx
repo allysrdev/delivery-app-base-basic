@@ -67,7 +67,7 @@ export default function DashboardPage() {
             </Link>
 
             {/* Card: Gestão de Produtos */}
-            <Link href="/admin/gestao-de-produtos">
+            <Link href="/admin/addproduct">
               <Card className="h-full bg-gray-900 border-gray-800 hover:border-gray-700 transition-colors">
                 <CardHeader>
                   <CardTitle className="text-white">Gestão de Produtos</CardTitle>

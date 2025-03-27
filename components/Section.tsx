@@ -68,6 +68,7 @@ function Section() {
                     quantity={quantity}
                     addToCart={addToCart}
                     removeFromCart={removeFromCart}
+                    discount={product.discount}
                   />
                 );
               })}

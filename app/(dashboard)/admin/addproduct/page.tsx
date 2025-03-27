@@ -37,7 +37,9 @@ const AddProduct = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [productImage, setProductImage] = useState("");
   const [price, setPrice] = useState<number>(0);
+  const [discount, setDiscount] = useState<number>(0);
   const [uploading, setUploading] = useState(false);
   const [products, setProducts] = useState<Product[]>();
   const [publicId, setPublicId] = useState("");
@@ -69,8 +71,9 @@ const AddProduct = () => {
     setName(product.name);
     setDescription(product.description || "");
     setPrice(product.price);
-    setPublicId(product.imageUrl);
+    setProductImage(product.imageUrl);
     setCategory(product.category || "Outros");
+    setDiscount(product.discount || 0);
     router.refresh();
   };
 
@@ -110,15 +113,16 @@ const AddProduct = () => {
       const imageUrl = publicId ? cld.image(publicId).toURL() : "";
 
       if (selectedProduct) {
-        await updateProduct(productId, name, description, price, imageUrl);
+        await updateProduct(productId, name, description, price, imageUrl ? imageUrl : productImage,discount, category);
         alert("✅ Produto atualizado com sucesso!");
       } else {
         await set(dbRef(database, `products/${productId}`), {
           name,
           description,
           price,
-          imageUrl,
+          imageUrl: imageUrl ? imageUrl : "",
           category,
+          discount: discount ? discount : 0,
         });
         alert("✅ Produto adicionado com sucesso!");
       }
@@ -203,6 +207,30 @@ const AddProduct = () => {
                 required
               />
             </div>
+            <div className="flex flex-col">
+              <label htmlFor="value" className="text-white font-semibold mb-1">
+                Promoção
+              </label>
+              <Input
+                name="value"
+                type="text"
+                placeholder="Digite a porcentagem de desconto (ex: 15)"
+                value={discount === 0 ? "" : discount.toString()}
+                onChange={(e) => setDiscount(Number(e.target.value))}
+                className="p-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
+              />
+            </div>
+
+            <p className="text-white font-semibold mb-1">Imagem atual do produto</p>
+            <div className="mx-auto my-4" style={{ width: "150px" }}>
+                    <Image
+                    style={{ borderRadius: "12px" }}
+                    alt="Imagem do Produto"
+                    src={productImage || '/noimage.png'}
+                    width={150}
+                    height={150}
+                    />
+                  </div>
 
             {publicId && (
               <div className="mx-auto my-4" style={{ width: "150px" }}>
@@ -215,7 +243,7 @@ const AddProduct = () => {
             )}
 
             <div className="flex flex-col">
-              <label className="text-white font-semibold mb-1">Imagem do Produto</label>
+              <label className="text-white font-semibold mb-1">Mudar imagem do produto</label>
               <CloudinaryUploadWidget
                 uwConfig={{
                   cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
@@ -223,8 +251,9 @@ const AddProduct = () => {
                   cropping: true,
                 }}
                 setPublicId={setPublicId}
-              />
+                />
             </div>
+
 
             <button
               type="submit"

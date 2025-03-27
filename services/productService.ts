@@ -3,11 +3,12 @@ import { database } from './firebase';
 
 
 // Função para adicionar um novo produto
-export const addProduct = (productId: string, name: string, description: string, price: number, imageUrl: string): void => {
+export const addProduct = (productId: string, name: string, description: string, price: number, imageUrl: string, discount?: number): void => {
   set(ref(database, 'products' + productId), {
     name: name,
     description: description,
     price: price,
+    discount: discount ? discount : 0,
     imagemUrl: imageUrl,
   });
 };
@@ -67,13 +68,15 @@ export const getProductsBySearch = async (searchTerm: string) => {
     }
 };
 
-export const updateProduct = async (productId: string, name: string, description: string, price: number, imageUrl: string): Promise<void> => {
+export const updateProduct = async (productId: string, name: string, description: string, price: number, imageUrl: string, discount?: number, category?: string): Promise<void> => {
   try {
     await set(ref(database, `products/${productId}`), {
       name: name,
       description: description,
       price: price,
       imageUrl: imageUrl,
+      discount: discount ? discount : 0,
+      category: category ? category : "",
     });
     console.log("Produto atualizado com sucesso!");
   } catch (error) {
