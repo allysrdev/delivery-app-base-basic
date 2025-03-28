@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { listenToOrders, Order, updateOrderStatus } from '@/services/orderService';
 import { Printer, CheckCircle, XCircle, Truck, PackageCheck, Phone } from 'lucide-react';
-
 
 const getElapsedTime = (createdAt: string) => {
   const now = new Date();
@@ -69,17 +68,41 @@ const printOrder = (order: Order) => {
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [previousOrdersCount, setPreviousOrdersCount] = useState(0);
 
   useEffect(() => {
-    // Função que vai escutar os pedidos em tempo real
+    audioRef.current = new Audio('/notification.wav');
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const stopListening = listenToOrders((updatedOrders) => {
       updatedOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      setOrders(updatedOrders); // Atualiza os pedidos no estado
+      
+      // Toca o som quando um novo pedido é adicionado
+      if (updatedOrders.length > previousOrdersCount) {
+        const newPendingOrders = updatedOrders.filter(order => 
+          order.status === 'Pendente' && 
+          !orders.some(o => o.orderId === order.orderId)
+        );
+        
+        if (newPendingOrders.length > 0 && audioRef.current) {
+          audioRef.current.play().catch(e => console.error("Falha ao reproduzir áudio:", e));
+        }
+      }
+      
+      setPreviousOrdersCount(updatedOrders.length);
+      setOrders(updatedOrders);
     });
 
-    // Retorna a função de limpeza quando o componente for desmontado
     return () => stopListening();
-  }, []);
+  }, [orders, previousOrdersCount]);
 
   const updateStatus = async (orderId: string, newStatus: Order['status']) => {
     await updateOrderStatus(orderId, newStatus);
@@ -127,7 +150,6 @@ export default function OrdersPage() {
                   <Button onClick={() => {
                     updateStatus(order.orderId, 'Preparo')
                     printOrder(order)
-
                   }} className="bg-green-500 hover:bg-green-600 text-white">
                     <CheckCircle size={16} className="mr-2" /> Aceitar
                   </Button>
@@ -152,14 +174,14 @@ export default function OrdersPage() {
                 </Button>
               )}
               <Button 
-              onClick={() => {
-                const contactUser = 'https://wa.me/' + order.contactNumber;
-                window.open(contactUser, '_blank');
-              }} 
-              className="bg-gray-500 hover:bg-gray-600 text-white">
-              <Phone size={16} className="mr-2" /> Contato
-            </Button>
-                  </div>
+                onClick={() => {
+                  const contactUser = 'https://wa.me/' + order.contactNumber;
+                  window.open(contactUser, '_blank');
+                }} 
+                className="bg-gray-500 hover:bg-gray-600 text-white">
+                <Phone size={16} className="mr-2" /> Contato
+              </Button>
+            </div>
           </Card>
         ))}
       </div>

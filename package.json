@@ -46,6 +46,7 @@
     "next-auth": "^5.0.0-beta.25",
     "next-cloudinary": "^6.16.0",
     "openssl": "^2.0.0",
+    "pagarme": "^4.35.2",
     "react": "^19.0.0",
     "react-apexcharts": "^1.7.0",
     "react-dom": "^19.0.0",

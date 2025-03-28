@@ -82,6 +82,8 @@ function Page() {
             troco || ''
         );
 
+        // empty the cart
+        cart.length = 0;
         setTimeout(() => setStep(2), 2000);
         setTimeout(() => redirect('/pedidos'), 200);
     }
